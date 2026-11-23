@@ -1,106 +1,35 @@
-index.html
+
 <!DOCTYPE html>
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mihir Task Earning</title>
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#101827;color:white;font-family:Arial,sans-serif}
-header{background:#087cdb;padding:22px;border-radius:0 0 22px 22px}
-h2{margin:5px 0}
-.container{padding:18px}
-.card{background:#1e293b;padding:18px;border-radius:15px;margin:15px 0}
-.balance{font-size:30px;color:#42e69a;font-weight:bold}
-button{background:#087cdb;color:white;border:0;padding:12px 18px;border-radius:9px;font-size:15px}
-input{padding:13px;width:100%;border-radius:9px;border:0;margin:10px 0}
-nav{display:flex;justify-content:space-around;background:#1e293b;padding:15px;position:sticky;bottom:0}
-nav button{padding:10px;background:#334155}
-.task{display:flex;justify-content:space-between;align-items:center;gap:8px}
-small{color:#bdc8d8}
+body{font-family:Arial;background:#f1f4f9;margin:0;text-align:center}
+header{background:#673ab7;color:white;padding:25px}
+.card{background:white;margin:18px;padding:20px;border-radius:15px}
+button{background:#673ab7;color:white;border:0;padding:12px 25px;border-radius:8px}
 </style>
 </head>
 <body>
 <header>
-<h2>💰 Mihir Task Earning</h2>
-<p>नमस्ते! आपका स्वागत है 🙏</p>
+<h1>Mihir Task Earning</h1>
+<p>काम करो और कमाई के अवसर पाओ</p>
 </header>
-
-<div class="container">
 <div class="card">
-<h3>आपका Wallet Balance</h3>
-<div class="balance">₹<span id="balance">0</span></div>
-<small>यह केवल Demo Balance है।</small>
+<h2>Welcome Mihir!</h2>
+<p>हमारे Task App में आपका स्वागत है।</p>
 </div>
-
 <div class="card">
-<h3>👤 आपका अकाउंट</h3>
-<input id="username" placeholder="अपना नाम लिखें">
-<button onclick="saveName()">नाम सेव करें</button>
-<p id="welcome"></p>
+<h3>Available Tasks</h3>
+<p>अभी कोई Task उपलब्ध नहीं है।</p>
+<button onclick="alert('नए Tasks जल्द आएंगे!')">View Tasks</button>
 </div>
-
-<h3>📋 Daily Tasks</h3>
-<div class="card task">
-<div><b>Task 1</b><br><small>Daily Login Demo</small></div>
-<button onclick="completeTask(this,5)">शुरू करें</button>
-</div>
-
-<div class="card task">
-<div><b>Task 2</b><br><small>App Explore Demo</small></div>
-<button onclick="completeTask(this,10)">शुरू करें</button>
-</div>
-
-<div class="card task">
-<div><b>Task 3</b><br><small>Daily Activity Demo</small></div>
-<button onclick="completeTask(this,15)">शुरू करें</button>
-</div>
-
 <div class="card">
-<h3>💳 Withdrawal</h3>
-<p>Withdrawal सुविधा अभी उपलब्ध नहीं है।</p>
-<button onclick="alert('Withdrawal अभी Demo में उपलब्ध नहीं है।')">Withdraw</button>
+<h3>My Wallet</h3>
+<p>₹0</p>
 </div>
-
-<div class="card">
-<h3>ℹ️ About Us</h3>
-<p>Mihir Task Earning में आपका स्वागत है।</p>
-<p>Admin: bhoimihir946@gmail.com</p>
-</div>
-</div>
-
-<nav>
-<button onclick="scrollTo(0,0)">🏠 Home</button>
-<button onclick="document.querySelector('h3').scrollIntoView()">📋 Tasks</button>
-<button onclick="alert('यह Demo Wallet है')">💰 Wallet</button>
-</nav>
-
-<script>
-let balance=0;
-let done=[];
-function saveName(){
-let name=document.getElementById('username').value.trim();
-if(!name)return alert('अपना नाम लिखें');
-document.getElementById('welcome').innerText='नमस्ते '+name+' जी! 🙏';
-localStorage.setItem('mihirName',name);
-}
-function completeTask(btn,amount){
-if(done.includes(btn.parentElement.innerText.split('\n')[0]))
-return alert('यह Demo Task पहले पूरा हो चुका है');
-let id=btn.parentElement.innerText.split('\n')[0];
-done.push(id);
-balance+=amount;
-document.getElementById('balance').innerText=balance;
-btn.innerText='पूरा हुआ ✓';
-btn.disabled=true;
-btn.style.background='#16834b';
-}
-let oldName=localStorage.getItem('mihirName');
-if(oldName){
-document.getElementById('username').value=oldName;
-document.getElementById('welcome').innerText='नमस्ते '+oldName+' जी! 🙏';
-}
-</script>
 </body>
 </html>
+
