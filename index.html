@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="hi">
 <head>
@@ -35,6 +34,7 @@ button{background:#673ab7;color:white;border:0;padding:12px 25px;border-radius:8
 <hr>
 <h3>Already have an account?</h3>
 <button id="signin">Login</button>
+<button id="forgot">Forgot Password?</button>
 <p id="message"></p>
 </div>
 </div>
@@ -56,13 +56,15 @@ button{background:#673ab7;color:white;border:0;padding:12px 25px;border-radius:8
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+
 import {
 getAuth,
 createUserWithEmailAndPassword,
 signInWithEmailAndPassword,
 onAuthStateChanged,
 signOut,
-updateProfile
+updateProfile,
+sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
 const firebaseConfig = {
@@ -84,7 +86,9 @@ const errors = {
 "auth/invalid-email":"Email sahi nahi hai.",
 "auth/weak-password":"Password kam se kam 6 characters ka rakho.",
 "auth/invalid-credential":"Email ya password galat hai.",
-"auth/network-request-failed":"Internet connection check karo."
+"auth/network-request-failed":"Internet connection check karo.",
+"auth/user-not-found":"Is email se account nahi mila.",
+"auth/too-many-requests":"Bahut baar try kiya. Thodi der baad try karo."
 };
 return errors[error.code] || "Kuch galat hua. Dobara try karo.";
 }
@@ -93,6 +97,8 @@ document.getElementById("signup").onclick = async () => {
 const name = document.getElementById("name").value.trim();
 const email = document.getElementById("email").value.trim();
 const password = document.getElementById("password").value;
+
+message.style.color = "red";
 
 if (!name || !email || !password) {
 message.textContent = "Sabhi details bharo.";
@@ -107,6 +113,7 @@ return;
 try {
 const result = await createUserWithEmailAndPassword(auth,email,password);
 await updateProfile(result.user,{displayName:name});
+message.style.color = "green";
 message.textContent = "Account ban gaya!";
 } catch(error) {
 message.textContent = hindiError(error);
@@ -116,6 +123,8 @@ message.textContent = hindiError(error);
 document.getElementById("signin").onclick = async () => {
 const email = document.getElementById("email").value.trim();
 const password = document.getElementById("password").value;
+
+message.style.color = "red";
 
 if(!email || !password) {
 message.textContent = "Email aur password bharo.";
@@ -129,7 +138,28 @@ message.textContent = hindiError(error);
 }
 };
 
-document.getElementById("logout").onclick = () => signOut(auth);
+document.getElementById("forgot").onclick = async () => {
+const email = document.getElementById("email").value.trim();
+
+message.style.color = "red";
+
+if(!email) {
+message.textContent = "Pehle apna registered email likho.";
+return;
+}
+
+try {
+await sendPasswordResetEmail(auth,email);
+message.style.color = "green";
+message.textContent = "Password reset link email par bhej diya gaya hai. Inbox check karo.";
+} catch(error) {
+message.textContent = hindiError(error);
+}
+};
+
+document.getElementById("logout").onclick = async () => {
+await signOut(auth);
+};
 
 onAuthStateChanged(auth,user => {
 if(user) {
@@ -147,4 +177,6 @@ document.getElementById("app").style.display = "none";
 
 </body>
 </html>
+
+
 
