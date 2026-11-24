@@ -1,10 +1,12 @@
 
+
 <!DOCTYPE html>
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mihir Task Earnings</title>
+
 <style>
 body{font-family:Arial;background:#f1f4f9;margin:0;text-align:center}
 header{background:#673ab7;color:white;padding:25px}
@@ -15,6 +17,7 @@ button{background:#673ab7;color:white;border:0;padding:12px 25px;border-radius:8
 #message{color:#d32f2f}
 </style>
 </head>
+
 <body>
 
 <header>
@@ -26,15 +29,19 @@ button{background:#673ab7;color:white;border:0;padding:12px 25px;border-radius:8
 <div class="card">
 <h2>Welcome Mihir!</h2>
 <h3>Create Account / Sign Up</h3>
+
 <input id="name" type="text" placeholder="Apna Naam">
 <input id="email" type="email" placeholder="Email Address">
 <input id="password" type="password" placeholder="Password (6 characters)">
+
 <br>
 <button id="signup">Sign Up</button>
+
 <hr>
 <h3>Already have an account?</h3>
 <button id="signin">Login</button>
 <button id="forgot">Forgot Password?</button>
+
 <p id="message"></p>
 </div>
 </div>
@@ -47,6 +54,7 @@ button{background:#673ab7;color:white;border:0;padding:12px 25px;border-radius:8
 <p>अभी कोई Task उपलब्ध नहीं है।</p>
 <button onclick="alert('नए Tasks जल्द आएंगे!')">View Tasks</button>
 </div>
+
 <div class="card">
 <h3>My Wallet</h3>
 <p>₹0</p>
@@ -55,6 +63,7 @@ button{background:#673ab7;color:white;border:0;padding:12px 25px;border-radius:8
 </div>
 
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
 
 import {
@@ -67,17 +76,27 @@ updateProfile,
 sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
+import {
+getFirestore,
+doc,
+setDoc,
+serverTimestamp
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
 const firebaseConfig = {
 apiKey: "AIzaSyDFBGdt5UPm9poNbqlXKyZF1d2NGu1AkUE",
 authDomain: "mihir-task-earnings.firebaseapp.com",
 projectId: "mihir-task-earnings",
 storageBucket: "mihir-task-earnings.firebasestorage.app",
 messagingSenderId: "827363704121",
-appId: "1:827363704121:web:f2b8e6c4bbc521f1fdfce8"
+appId: "1:827363704121:web:f2b8e6c4bbc521f1fdfce8",
+measurementId: "G-MBCQ91W6NE"
 };
 
 const firebaseApp = initializeApp(firebaseConfig);
 const auth = getAuth(firebaseApp);
+const db = getFirestore(firebaseApp);
+
 const message = document.getElementById("message");
 
 function hindiError(error) {
@@ -88,19 +107,23 @@ const errors = {
 "auth/invalid-credential":"Email ya password galat hai.",
 "auth/network-request-failed":"Internet connection check karo.",
 "auth/user-not-found":"Is email se account nahi mila.",
-"auth/too-many-requests":"Bahut baar try kiya. Thodi der baad try karo."
+"auth/too-many-requests":"Thodi der baad try karo.",
+"permission-denied":"Firestore security rules check karo."
 };
+
 return errors[error.code] || "Kuch galat hua. Dobara try karo.";
 }
 
+// SIGN UP
 document.getElementById("signup").onclick = async () => {
+
 const name = document.getElementById("name").value.trim();
 const email = document.getElementById("email").value.trim();
 const password = document.getElementById("password").value;
 
 message.style.color = "red";
 
-if (!name || !email || !password) {
+if(!name || !email || !password) {
 message.textContent = "Sabhi details bharo.";
 return;
 }
@@ -111,16 +134,32 @@ return;
 }
 
 try {
+
 const result = await createUserWithEmailAndPassword(auth,email,password);
+
 await updateProfile(result.user,{displayName:name});
+
+// SAVE USER IN FIRESTORE
+await setDoc(doc(db,"users",result.user.uid),{
+name:name,
+email:email,
+uid:result.user.uid,
+wallet:0,
+createdAt:serverTimestamp()
+});
+
 message.style.color = "green";
 message.textContent = "Account ban gaya!";
+
 } catch(error) {
 message.textContent = hindiError(error);
 }
+
 };
 
+// LOGIN
 document.getElementById("signin").onclick = async () => {
+
 const email = document.getElementById("email").value.trim();
 const password = document.getElementById("password").value;
 
@@ -136,47 +175,57 @@ await signInWithEmailAndPassword(auth,email,password);
 } catch(error) {
 message.textContent = hindiError(error);
 }
+
 };
 
+// FORGOT PASSWORD
 document.getElementById("forgot").onclick = async () => {
+
 const email = document.getElementById("email").value.trim();
 
-message.style.color = "red";
-
 if(!email) {
-message.textContent = "Pehle apna registered email likho.";
+message.textContent = "Pehle registered email likho.";
 return;
 }
 
 try {
 await sendPasswordResetEmail(auth,email);
 message.style.color = "green";
-message.textContent = "Password reset link email par bhej diya gaya hai. Inbox check karo.";
+message.textContent = "Password reset link email par bhej diya gaya hai.";
 } catch(error) {
 message.textContent = hindiError(error);
 }
+
 };
 
+// LOGOUT
 document.getElementById("logout").onclick = async () => {
 await signOut(auth);
 };
 
+// AUTH STATE
 onAuthStateChanged(auth,user => {
+
 if(user) {
+
 document.getElementById("login").style.display = "none";
 document.getElementById("app").style.display = "block";
+
 document.getElementById("welcome").textContent =
 "Welcome " + (user.displayName || "User") + "!";
+
 document.getElementById("userEmail").textContent = user.email;
+
 } else {
+
 document.getElementById("login").style.display = "block";
 document.getElementById("app").style.display = "none";
+
 }
+
 });
+
 </script>
 
 </body>
 </html>
-
-
-
