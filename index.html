@@ -9,19 +9,39 @@
 body{font-family:Arial;background:#f1f4f9;margin:0;text-align:center}
 header{background:#673ab7;color:white;padding:25px}
 .card{background:white;margin:18px;padding:20px;border-radius:15px}
-button{background:#673ab7;color:white;border:0;padding:12px 25px;border-radius:8px}
+input{width:85%;padding:13px;margin:8px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box}
+button{background:#673ab7;color:white;border:0;padding:12px 25px;border-radius:8px;margin:8px;cursor:pointer}
+#app{display:none}
+#message{color:#d32f2f}
 </style>
 </head>
 <body>
+
 <header>
 <h1>Mihir Task Earning</h1>
 <p>काम करो और कमाई के अवसर पाओ</p>
 </header>
+
+<div id="login">
 <div class="card">
 <h2>Welcome Mihir!</h2>
-<p>हमारे Task App में आपका स्वागत है।</p>
+<h3>Create Account / Sign Up</h3>
+<input id="name" type="text" placeholder="Apna Naam">
+<input id="email" type="email" placeholder="Email Address">
+<input id="password" type="password" placeholder="Password (6 characters)">
+<br>
+<button id="signup">Sign Up</button>
+<hr>
+<h3>Already have an account?</h3>
+<button id="signin">Login</button>
+<p id="message"></p>
 </div>
+</div>
+
+<div id="app">
 <div class="card">
+<h2>Welcome!</h2>
+<p id="userEmail"></p>
 <h3>Available Tasks</h3>
 <p>अभी कोई Task उपलब्ध नहीं है।</p>
 <button onclick="alert('नए Tasks जल्द आएंगे!')">View Tasks</button>
@@ -29,10 +49,19 @@ button{background:#673ab7;color:white;border:0;padding:12px 25px;border-radius:8
 <div class="card">
 <h3>My Wallet</h3>
 <p>₹0</p>
+<button id="logout">Logout</button>
 </div>
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+import {
+getAuth,
+createUserWithEmailAndPassword,
+signInWithEmailAndPassword,
+onAuthStateChanged,
+signOut
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
 const firebaseConfig = {
 apiKey: "AIzaSyDFBGdt5UPm9poNbqlXKyZF1d2NGu1AkUE",
@@ -45,8 +74,53 @@ appId: "1:827363704121:web:f2b8e6c4bbc521f1fdfce8"
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+
+const message = document.getElementById("message");
+
+document.getElementById("signup").onclick = async () => {
+const name = document.getElementById("name").value.trim();
+const email = document.getElementById("email").value.trim();
+const password = document.getElementById("password").value;
+
+if (!name || !email || !password) {
+message.textContent = "Sabhi details bharo.";
+return;
+}
+
+try {
+await createUserWithEmailAndPassword(auth,email,password);
+message.textContent = "Account ban gaya!";
+} catch(error) {
+message.textContent = error.message;
+}
+};
+
+document.getElementById("signin").onclick = async () => {
+const email = document.getElementById("email").value.trim();
+const password = document.getElementById("password").value;
+
+try {
+await signInWithEmailAndPassword(auth,email,password);
+} catch(error) {
+message.textContent = error.message;
+}
+};
+
+document.getElementById("logout").onclick = () => signOut(auth);
+
+onAuthStateChanged(auth, user => {
+if(user) {
+document.getElementById("login").style.display = "none";
+document.getElementById("app").style.display = "block";
+document.getElementById("userEmail").textContent = user.email;
+} else {
+document.getElementById("login").style.display = "block";
+document.getElementById("app").style.display = "none";
+}
+});
 </script>
 </body>
 </html>
+
 
 
