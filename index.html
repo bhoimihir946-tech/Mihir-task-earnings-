@@ -31,6 +31,21 @@ button{background:#673ab7;color:white;border:0;padding:12px 25px;border-radius:8
 <h3>My Wallet</h3>
 <p>₹0</p>
 </div>
-</body>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDFBGdt5UPm9poNbqlXKyZF1d2NGu1AkUE",
+  authDomain: "mihir-task-earnings.firebaseapp.com",
+  projectId: "mihir-task-earnings",
+  storageBucket: "mihir-task-earnings.firebasestorage.app",
+  messagingSenderId: "827363704121",
+  appId: "1:827363704121:web:f2b8e6c4bbc521f1fdfce8"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+  </script></body>
 </html>
 
