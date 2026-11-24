@@ -1,10 +1,11 @@
 
+
 <!DOCTYPE html>
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mihir Task Earning</title>
+<title>Mihir Task Earnings</title>
 <style>
 body{font-family:Arial;background:#f1f4f9;margin:0;text-align:center}
 header{background:#673ab7;color:white;padding:25px}
@@ -18,7 +19,7 @@ button{background:#673ab7;color:white;border:0;padding:12px 25px;border-radius:8
 <body>
 
 <header>
-<h1>Mihir Task Earning</h1>
+<h1>Mihir Task Earnings</h1>
 <p>काम करो और कमाई के अवसर पाओ</p>
 </header>
 
@@ -40,7 +41,7 @@ button{background:#673ab7;color:white;border:0;padding:12px 25px;border-radius:8
 
 <div id="app">
 <div class="card">
-<h2>Welcome!</h2>
+<h2 id="welcome">Welcome!</h2>
 <p id="userEmail"></p>
 <h3>Available Tasks</h3>
 <p>अभी कोई Task उपलब्ध नहीं है।</p>
@@ -60,7 +61,8 @@ getAuth,
 createUserWithEmailAndPassword,
 signInWithEmailAndPassword,
 onAuthStateChanged,
-signOut
+signOut,
+updateProfile
 } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
 const firebaseConfig = {
@@ -72,10 +74,20 @@ messagingSenderId: "827363704121",
 appId: "1:827363704121:web:f2b8e6c4bbc521f1fdfce8"
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-
+const firebaseApp = initializeApp(firebaseConfig);
+const auth = getAuth(firebaseApp);
 const message = document.getElementById("message");
+
+function hindiError(error) {
+const errors = {
+"auth/email-already-in-use":"Ye email pehle se registered hai.",
+"auth/invalid-email":"Email sahi nahi hai.",
+"auth/weak-password":"Password kam se kam 6 characters ka rakho.",
+"auth/invalid-credential":"Email ya password galat hai.",
+"auth/network-request-failed":"Internet connection check karo."
+};
+return errors[error.code] || "Kuch galat hua. Dobara try karo.";
+}
 
 document.getElementById("signup").onclick = async () => {
 const name = document.getElementById("name").value.trim();
@@ -87,11 +99,17 @@ message.textContent = "Sabhi details bharo.";
 return;
 }
 
+if(password.length < 6) {
+message.textContent = "Password kam se kam 6 characters ka hona chahiye.";
+return;
+}
+
 try {
-await createUserWithEmailAndPassword(auth,email,password);
+const result = await createUserWithEmailAndPassword(auth,email,password);
+await updateProfile(result.user,{displayName:name});
 message.textContent = "Account ban gaya!";
 } catch(error) {
-message.textContent = error.message;
+message.textContent = hindiError(error);
 }
 };
 
@@ -99,19 +117,26 @@ document.getElementById("signin").onclick = async () => {
 const email = document.getElementById("email").value.trim();
 const password = document.getElementById("password").value;
 
+if(!email || !password) {
+message.textContent = "Email aur password bharo.";
+return;
+}
+
 try {
 await signInWithEmailAndPassword(auth,email,password);
 } catch(error) {
-message.textContent = error.message;
+message.textContent = hindiError(error);
 }
 };
 
 document.getElementById("logout").onclick = () => signOut(auth);
 
-onAuthStateChanged(auth, user => {
+onAuthStateChanged(auth,user => {
 if(user) {
 document.getElementById("login").style.display = "none";
 document.getElementById("app").style.display = "block";
+document.getElementById("welcome").textContent =
+"Welcome " + (user.displayName || "User") + "!";
 document.getElementById("userEmail").textContent = user.email;
 } else {
 document.getElementById("login").style.display = "block";
@@ -119,8 +144,7 @@ document.getElementById("app").style.display = "none";
 }
 });
 </script>
+
 </body>
 </html>
-
-
 
