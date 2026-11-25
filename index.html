@@ -1,23 +1,24 @@
 
-
 <!DOCTYPE html>
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mihir Task Earnings</title>
-
 <style>
+*{box-sizing:border-box}
 body{font-family:Arial;background:#f1f4f9;margin:0;text-align:center}
-header{background:#673ab7;color:white;padding:25px}
-.card{background:white;margin:18px;padding:20px;border-radius:15px}
-input{width:85%;padding:13px;margin:8px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box}
-button{background:#673ab7;color:white;border:0;padding:12px 25px;border-radius:8px;margin:8px;cursor:pointer}
-#app{display:none}
-#message{color:#d32f2f}
+header{background:#673ab7;color:white;padding:22px}
+.card{background:white;margin:16px;padding:20px;border-radius:15px}
+input,textarea{width:90%;padding:13px;margin:8px;border:1px solid #ccc;border-radius:8px}
+button{background:#673ab7;color:white;border:0;padding:12px 20px;border-radius:8px;margin:7px;cursor:pointer}
+.red{background:#d32f2f}
+.green{background:#168443}
+#app,#admin{display:none}
+.item{border:1px solid #ddd;border-radius:10px;padding:12px;margin:10px 0;overflow-wrap:anywhere}
+.small{font-size:14px;color:#555}
 </style>
 </head>
-
 <body>
 
 <header>
@@ -28,204 +29,440 @@ button{background:#673ab7;color:white;border:0;padding:12px 25px;border-radius:8
 <div id="login">
 <div class="card">
 <h2>Welcome Mihir!</h2>
-<h3>Create Account / Sign Up</h3>
-
-<input id="name" type="text" placeholder="Apna Naam">
+<h3>Create Account / Login</h3>
+<input id="name" placeholder="Apna Naam">
 <input id="email" type="email" placeholder="Email Address">
 <input id="password" type="password" placeholder="Password (6 characters)">
-
 <br>
 <button id="signup">Sign Up</button>
-
-<hr>
-<h3>Already have an account?</h3>
 <button id="signin">Login</button>
-<button id="forgot">Forgot Password?</button>
-
+<button id="forgot">Forgot Password</button>
 <p id="message"></p>
 </div>
 </div>
 
 <div id="app">
 <div class="card">
-<h2 id="welcome">Welcome!</h2>
+<h2 id="welcome">Welcome User!</h2>
 <p id="userEmail"></p>
 <h3>Available Tasks</h3>
-<p>अभी कोई Task उपलब्ध नहीं है।</p>
-<button onclick="alert('नए Tasks जल्द आएंगे!')">View Tasks</button>
+<div id="taskList"></div>
 </div>
 
 <div class="card">
 <h3>My Wallet</h3>
-<p>₹0</p>
+<h2 id="wallet">₹0</h2>
+<h3>Withdraw Money</h3>
+<input id="amount" type="number" min="1" placeholder="Amount in ₹">
+<input id="upi" placeholder="Your UPI ID">
+<button id="withdraw">Request Withdrawal</button>
+<p id="userMessage"></p>
+<h3>My Withdrawal History</h3>
+<div id="myWithdrawals"></div>
 <button id="logout">Logout</button>
 </div>
 </div>
 
+<div id="admin">
+<div class="card">
+<h2>Admin Dashboard</h2>
+<h3>Total Users: <span id="totalUsers">0</span></h3>
+<h3>Add New Task</h3>
+<input id="taskTitle" placeholder="Task Name">
+<textarea id="taskDescription" placeholder="Task Description"></textarea>
+<input id="taskReward" type="number" min="1" placeholder="Reward ₹">
+<button id="addTask">Add Task</button>
+<p id="adminMessage"></p>
+</div>
+
+<div class="card">
+<h3>Manage Tasks</h3>
+<div id="adminTasks"></div>
+</div>
+
+<div class="card">
+<h3>Registered Users</h3>
+<div id="usersList"></div>
+</div>
+
+<div class="card">
+<h3>Withdrawal Requests</h3>
+<div id="withdrawList"></div>
+</div>
+
+<div class="card">
+<button id="adminLogout">Admin Logout</button>
+</div>
+</div>
+
 <script type="module">
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
-
-import {
-getAuth,
-createUserWithEmailAndPassword,
-signInWithEmailAndPassword,
-onAuthStateChanged,
-signOut,
-updateProfile,
-sendPasswordResetEmail
-} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+import {initializeApp} from
+"https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
 
 import {
-getFirestore,
-doc,
-setDoc,
-serverTimestamp
-} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+getAuth,createUserWithEmailAndPassword,
+signInWithEmailAndPassword,onAuthStateChanged,
+signOut,updateProfile,sendPasswordResetEmail
+} from
+"https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
-const firebaseConfig = {
-apiKey: "AIzaSyDFBGdt5UPm9poNbqlXKyZF1d2NGu1AkUE",
-authDomain: "mihir-task-earnings.firebaseapp.com",
-projectId: "mihir-task-earnings",
-storageBucket: "mihir-task-earnings.firebasestorage.app",
-messagingSenderId: "827363704121",
-appId: "1:827363704121:web:f2b8e6c4bbc521f1fdfce8",
-measurementId: "G-MBCQ91W6NE"
+import {
+getFirestore,doc,setDoc,getDoc,collection,
+getDocs,addDoc,deleteDoc,serverTimestamp,
+runTransaction,query,where
+} from
+"https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+
+const firebaseConfig={
+apiKey:"AIzaSyDFBGdt5UPm9poNbqlXKyZF1d2NGu1AkUE",
+authDomain:"mihir-task-earnings.firebaseapp.com",
+projectId:"mihir-task-earnings",
+storageBucket:"mihir-task-earnings.firebasestorage.app",
+messagingSenderId:"827363704121",
+appId:"1:827363704121:web:f2b8e6c4bbc521f1fdfce8",
+measurementId:"G-MBCQ91W6NE"
 };
 
-const firebaseApp = initializeApp(firebaseConfig);
-const auth = getAuth(firebaseApp);
-const db = getFirestore(firebaseApp);
+const firebaseApp=initializeApp(firebaseConfig);
+const auth=getAuth(firebaseApp);
+const db=getFirestore(firebaseApp);
 
-const message = document.getElementById("message");
+const $=id=>document.getElementById(id);
+const showMessage=(id,text)=>$(id).textContent=text;
 
-function hindiError(error) {
-const errors = {
-"auth/email-already-in-use":"Ye email pehle se registered hai.",
-"auth/invalid-email":"Email sahi nahi hai.",
-"auth/weak-password":"Password kam se kam 6 characters ka rakho.",
-"auth/invalid-credential":"Email ya password galat hai.",
-"auth/network-request-failed":"Internet connection check karo.",
-"auth/user-not-found":"Is email se account nahi mila.",
-"auth/too-many-requests":"Thodi der baad try karo.",
-"permission-denied":"Firestore security rules check karo."
-};
+function showPage(page){
+["login","app","admin"].forEach(id=>{
+$(id).style.display="none";
+});
+$(page).style.display="block";
+}
 
-return errors[error.code] || "Kuch galat hua. Dobara try karo.";
+function makeItem(parent,text){
+const div=document.createElement("div");
+div.className="item";
+div.textContent=text;
+$(parent).append(div);
+return div;
 }
 
 // SIGN UP
-document.getElementById("signup").onclick = async () => {
+$("signup").onclick=async()=>{
+try{
+const name=$("name").value.trim();
+const email=$("email").value.trim();
+const password=$("password").value;
 
-const name = document.getElementById("name").value.trim();
-const email = document.getElementById("email").value.trim();
-const password = document.getElementById("password").value;
-
-message.style.color = "red";
-
-if(!name || !email || !password) {
-message.textContent = "Sabhi details bharo.";
-return;
+if(!name||!email||password.length<6){
+throw Error("Naam, email aur kam se kam 6 character password bharo.");
 }
 
-if(password.length < 6) {
-message.textContent = "Password kam se kam 6 characters ka hona chahiye.";
-return;
-}
-
-try {
-
-const result = await createUserWithEmailAndPassword(auth,email,password);
-
+const result=await createUserWithEmailAndPassword(auth,email,password);
 await updateProfile(result.user,{displayName:name});
 
-// SAVE USER IN FIRESTORE
 await setDoc(doc(db,"users",result.user.uid),{
-name:name,
-email:email,
-uid:result.user.uid,
-wallet:0,
-createdAt:serverTimestamp()
+name,email,uid:result.user.uid,
+wallet:0,createdAt:serverTimestamp()
 });
 
-message.style.color = "green";
-message.textContent = "Account ban gaya!";
-
-} catch(error) {
-message.textContent = hindiError(error);
+showMessage("message","Account ban gaya!");
+}catch(e){
+showMessage("message",e.message);
 }
-
 };
 
 // LOGIN
-document.getElementById("signin").onclick = async () => {
-
-const email = document.getElementById("email").value.trim();
-const password = document.getElementById("password").value;
-
-message.style.color = "red";
-
-if(!email || !password) {
-message.textContent = "Email aur password bharo.";
-return;
+$("signin").onclick=async()=>{
+try{
+await signInWithEmailAndPassword(
+auth,$("email").value.trim(),$("password").value
+);
+}catch(e){
+showMessage("message","Login error: "+e.message);
 }
-
-try {
-await signInWithEmailAndPassword(auth,email,password);
-} catch(error) {
-message.textContent = hindiError(error);
-}
-
 };
 
 // FORGOT PASSWORD
-document.getElementById("forgot").onclick = async () => {
-
-const email = document.getElementById("email").value.trim();
-
-if(!email) {
-message.textContent = "Pehle registered email likho.";
-return;
-}
-
-try {
+$("forgot").onclick=async()=>{
+try{
+const email=$("email").value.trim();
+if(!email)throw Error("Pehle email likho.");
 await sendPasswordResetEmail(auth,email);
-message.style.color = "green";
-message.textContent = "Password reset link email par bhej diya gaya hai.";
-} catch(error) {
-message.textContent = hindiError(error);
+showMessage("message","Password reset link email par bhej diya.");
+}catch(e){
+showMessage("message",e.message);
 }
-
 };
 
 // LOGOUT
-document.getElementById("logout").onclick = async () => {
-await signOut(auth);
-};
+$("logout").onclick=()=>signOut(auth);
+$("adminLogout").onclick=()=>signOut(auth);
 
-// AUTH STATE
-onAuthStateChanged(auth,user => {
-
-if(user) {
-
-document.getElementById("login").style.display = "none";
-document.getElementById("app").style.display = "block";
-
-document.getElementById("welcome").textContent =
-"Welcome " + (user.displayName || "User") + "!";
-
-document.getElementById("userEmail").textContent = user.email;
-
-} else {
-
-document.getElementById("login").style.display = "block";
-document.getElementById("app").style.display = "none";
-
+// LOGIN CHECK
+onAuthStateChanged(auth,async user=>{
+if(!user){
+showPage("login");
+return;
 }
 
+try{
+const adminDoc=await getDoc(doc(db,"admins",user.uid));
+
+if(adminDoc.exists()){
+showPage("admin");
+await loadAdmin();
+}else{
+showPage("app");
+$("welcome").textContent="Welcome "+(user.displayName||"User")+"!";
+$("userEmail").textContent=user.email;
+await loadUser();
+}
+}catch(e){
+showPage("login");
+showMessage("message","Firebase error: "+e.message);
+}
 });
 
-</script>
+// USER DASHBOARD
+async function loadUser(){
+const uid=auth.currentUser.uid;
+const userDoc=await getDoc(doc(db,"users",uid));
 
+if(!userDoc.exists()){
+throw Error("User record Firestore mein nahi mila.");
+}
+
+$("wallet").textContent="₹"+Number(userDoc.data().wallet||0);
+
+const tasks=await getDocs(collection(db,"tasks"));
+$("taskList").replaceChildren();
+
+if(tasks.empty){
+makeItem("taskList","Abhi koi Task available nahi hai.");
+}
+
+tasks.forEach(d=>{
+const t=d.data();
+const div=document.createElement("div");
+div.className="item";
+
+const title=document.createElement("h3");
+title.textContent=t.title||"Task";
+
+const description=document.createElement("p");
+description.textContent=t.description||"";
+
+const reward=document.createElement("p");
+reward.textContent="Reward: ₹"+t.reward;
+
+div.append(title,description,reward);
+$("taskList").append(div);
+});
+
+// USER WITHDRAWAL HISTORY
+const requests=await getDocs(query(
+collection(db,"withdrawals"),
+where("uid","==",uid)
+));
+
+$("myWithdrawals").replaceChildren();
+
+if(requests.empty){
+makeItem("myWithdrawals","Abhi koi withdrawal request nahi hai.");
+}
+
+requests.forEach(d=>{
+const w=d.data();
+makeItem("myWithdrawals",
+"₹"+w.amount+" | "+w.status+" | "+w.upi
+);
+});
+}
+
+// WITHDRAW REQUEST
+$("withdraw").onclick=async()=>{
+try{
+const amount=Number($("amount").value);
+const upi=$("upi").value.trim();
+
+if(!Number.isFinite(amount)||amount<=0||!upi){
+throw Error("Sahi amount aur UPI ID bharo.");
+}
+
+const user=auth.currentUser;
+
+await addDoc(collection(db,"withdrawals"),{
+uid:user.uid,
+email:user.email,
+amount,
+upi,
+status:"pending",
+createdAt:serverTimestamp()
+});
+
+showMessage("userMessage","Withdrawal request submit ho gayi!");
+$("amount").value="";
+$("upi").value="";
+await loadUser();
+
+}catch(e){
+showMessage("userMessage",e.message);
+}
+};
+
+// ADMIN DASHBOARD
+async function loadAdmin(){
+
+const users=await getDocs(collection(db,"users"));
+$("totalUsers").textContent=users.size;
+$("usersList").replaceChildren();
+
+users.forEach(d=>{
+const u=d.data();
+makeItem("usersList",
+(u.name||"User")+" | "+u.email+" | Wallet ₹"+(u.wallet||0)
+);
+});
+
+// TASK LIST
+const tasks=await getDocs(collection(db,"tasks"));
+$("adminTasks").replaceChildren();
+
+if(tasks.empty){
+makeItem("adminTasks","Abhi koi Task nahi hai.");
+}
+
+tasks.forEach(d=>{
+const t=d.data();
+const div=document.createElement("div");
+div.className="item";
+
+const p=document.createElement("p");
+p.textContent=(t.title||"Task")+" | Reward ₹"+t.reward;
+
+const btn=document.createElement("button");
+btn.className="red";
+btn.textContent="Delete";
+
+btn.onclick=async()=>{
+if(!confirm("Kya ye Task delete karna hai?"))return;
+try{
+await deleteDoc(doc(db,"tasks",d.id));
+await loadAdmin();
+}catch(e){alert(e.message);}
+};
+
+div.append(p,btn);
+$("adminTasks").append(div);
+});
+
+// WITHDRAWAL REQUESTS
+const requests=await getDocs(collection(db,"withdrawals"));
+$("withdrawList").replaceChildren();
+
+if(requests.empty){
+makeItem("withdrawList","Abhi koi withdrawal request nahi hai.");
+}
+
+requests.forEach(d=>{
+const w=d.data();
+const div=document.createElement("div");
+div.className="item";
+
+const p=document.createElement("p");
+p.textContent=(w.email||"User")+" | ₹"+w.amount+
+" | "+w.upi+" | "+w.status;
+
+div.append(p);
+
+if(w.status==="pending"){
+const approve=document.createElement("button");
+approve.className="green";
+approve.textContent="Approve";
+
+const reject=document.createElement("button");
+reject.className="red";
+reject.textContent="Reject";
+
+approve.onclick=()=>processWithdrawal(d.id,true);
+reject.onclick=()=>processWithdrawal(d.id,false);
+
+div.append(approve,reject);
+}
+$("withdrawList").append(div);
+});
+}
+
+// ADD TASK
+$("addTask").onclick=async()=>{
+try{
+const title=$("taskTitle").value.trim();
+const description=$("taskDescription").value.trim();
+const reward=Number($("taskReward").value);
+
+if(!title||!description||!Number.isFinite(reward)||reward<=0){
+throw Error("Task ki sabhi details sahi bharo.");
+}
+
+await addDoc(collection(db,"tasks"),{
+title,description,reward,
+createdAt:serverTimestamp()
+});
+
+showMessage("adminMessage","Task successfully add ho gaya!");
+$("taskTitle").value="";
+$("taskDescription").value="";
+$("taskReward").value="";
+await loadAdmin();
+
+}catch(e){
+showMessage("adminMessage",e.message);
+}
+};
+
+// APPROVE / REJECT WITHDRAWAL
+async function processWithdrawal(id,approve){
+try{
+await runTransaction(db,async tx=>{
+const wr=doc(db,"withdrawals",id);
+const ws=await tx.get(wr);
+
+if(!ws.exists()||ws.data().status!=="pending"){
+throw Error("Ye request pehle process ho chuki hai.");
+}
+
+const w=ws.data();
+
+if(approve){
+const ur=doc(db,"users",w.uid);
+const us=await tx.get(ur);
+
+if(!us.exists())throw Error("User nahi mila.");
+
+const balance=Number(us.data().wallet||0);
+
+if(balance<w.amount){
+throw Error("User ke wallet mein balance kam hai.");
+}
+
+tx.update(ur,{wallet:balance-w.amount});
+}
+
+tx.update(wr,{
+status:approve?"approved":"rejected",
+processedAt:serverTimestamp()
+});
+});
+
+alert(approve?
+"Approved! Ab UPI payment manually bhejna hoga.":
+"Withdrawal rejected.");
+
+await loadAdmin();
+
+}catch(e){
+alert(e.message);
+}
+}
+</script>
 </body>
 </html>
