@@ -5,61 +5,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Mihir Task Earnings</title>
-
 <style>
 *{box-sizing:border-box}
-body{
- font-family:Arial,sans-serif;
- background:#f1f4f9;
- margin:0;
- text-align:center;
- color:#222;
-}
-header{
- background:#673ab7;
- color:white;
- padding:22px;
-}
-.card{
- background:white;
- margin:16px;
- padding:20px;
- border-radius:16px;
- box-shadow:0 2px 8px #00000010;
-}
-input,textarea{
- width:95%;
- padding:13px;
- margin:8px 0;
- border:1px solid #ccc;
- border-radius:8px;
- font-size:16px;
-}
-button{
- background:#673ab7;
- color:white;
- border:0;
- padding:12px 20px;
- border-radius:8px;
- margin:6px;
- cursor:pointer;
- font-size:15px;
-}
-.danger{background:#d32f2f}
-.green{background:#168447}
+body{font-family:Arial;background:#f1f4f9;margin:0;text-align:center;color:#222}
+header{background:#673ab7;color:white;padding:22px}
+.card{background:white;margin:16px;padding:20px;border-radius:16px;box-shadow:0 2px 8px #00000010}
+input,textarea{width:95%;padding:13px;margin:8px 0;border:1px solid #ccc;border-radius:8px;font-size:16px}
+button{background:#673ab7;color:white;border:0;padding:12px 20px;border-radius:8px;margin:6px;cursor:pointer;font-size:15px}
+.danger{background:#d32f2f}.green{background:#168447}
 #app,#admin{display:none}
 #message{color:red}
-.task{
- background:#f5f1ff;
- padding:14px;
- margin:10px 0;
- border-radius:10px;
- text-align:left;
-}
+.task{background:#f5f1ff;padding:14px;margin:10px 0;border-radius:10px;text-align:left}
 small{color:#777}
+.proof-img{max-width:100%;border-radius:10px;margin:10px 0}
 </style>
 </head>
-
 <body>
 
 <header>
@@ -67,18 +27,14 @@ small{color:#777}
 <p>काम करो और कमाई के अवसर पाओ</p>
 </header>
 
-<!-- LOGIN -->
 <div id="login">
 <div class="card">
 <h2>Welcome Mihir!</h2>
 <h3>Create Account / Sign Up</h3>
-
 <input id="name" placeholder="Apna Naam">
 <input id="email" type="email" placeholder="Email Address">
 <input id="password" type="password" placeholder="Password">
-
 <button id="signup">Sign Up</button>
-
 <hr>
 <h3>Already have an account?</h3>
 <button id="signin">Login</button>
@@ -87,13 +43,10 @@ small{color:#777}
 </div>
 </div>
 
-<!-- USER DASHBOARD -->
 <div id="app">
-
 <div class="card">
 <h2 id="welcome">Welcome User!</h2>
 <p id="userEmail"></p>
-
 <h3>Available Tasks</h3>
 <div id="userTasks">Loading Tasks...</div>
 </div>
@@ -104,11 +57,13 @@ small{color:#777}
 <button id="logout">Logout</button>
 </div>
 
+<div class="card">
+<h3>My Submitted Tasks</h3>
+<div id="mySubmissions">Loading...</div>
+</div>
 </div>
 
-<!-- ADMIN PANEL -->
 <div id="admin">
-
 <div class="card">
 <h2>👑 Admin Panel</h2>
 <p id="adminEmail"></p>
@@ -117,11 +72,9 @@ small{color:#777}
 
 <div class="card">
 <h3>➕ Add New Task</h3>
-
 <input id="taskTitle" placeholder="Task Title">
 <textarea id="taskDescription" placeholder="Task Description"></textarea>
 <input id="taskReward" type="number" placeholder="Reward Amount ₹">
-
 <button id="addTask">Add Task</button>
 <p id="taskMessage"></p>
 </div>
@@ -129,6 +82,11 @@ small{color:#777}
 <div class="card">
 <h3>📋 Manage Tasks</h3>
 <div id="adminTasks">Loading...</div>
+</div>
+
+<div class="card">
+<h3>📸 Task Proof Approval</h3>
+<div id="adminSubmissions">Loading...</div>
 </div>
 
 <div class="card">
@@ -148,59 +106,46 @@ small{color:#777}
 <h3>🏦 Withdrawal Requests</h3>
 <div id="withdrawals">Loading...</div>
 </div>
-
 </div>
 
 <script type="module">
-
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+import {initializeApp} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
 
 import {
-getAuth,
-createUserWithEmailAndPassword,
-signInWithEmailAndPassword,
-onAuthStateChanged,
-signOut,
-updateProfile,
-sendPasswordResetEmail
-}
-from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
+getAuth,createUserWithEmailAndPassword,
+signInWithEmailAndPassword,onAuthStateChanged,
+signOut,updateProfile,sendPasswordResetEmail
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js";
 
 import {
-getFirestore,
-doc,
-setDoc,
-getDoc,
-collection,
-getDocs,
-addDoc,
-deleteDoc,
-updateDoc,
-serverTimestamp
-}
-from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
+getFirestore,doc,setDoc,getDoc,collection,
+getDocs,addDoc,deleteDoc,updateDoc,serverTimestamp,
+runTransaction
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-firestore.js";
 
-const firebaseConfig = {
-apiKey: "AIzaSyDFBGdt5UPm9poNbqlXKyZF1d2NGu1AkUE",
-authDomain: "mihir-task-earnings.firebaseapp.com",
-projectId: "mihir-task-earnings",
-storageBucket: "mihir-task-earnings.firebasestorage.app",
-messagingSenderId: "827363704121",
-appId: "1:827363704121:web:f2b8e6c4bbc521f1fdfce8",
-measurementId: "G-MBCQ91W6NE"
+import {
+getStorage,ref,uploadBytes,getDownloadURL
+} from "https://www.gstatic.com/firebasejs/12.0.0/firebase-storage.js";
+
+const firebaseConfig={
+apiKey:"AIzaSyDFBGdt5UPm9poNbqlXKyZF1d2NGu1AkUE",
+authDomain:"mihir-task-earnings.firebaseapp.com",
+projectId:"mihir-task-earnings",
+storageBucket:"mihir-task-earnings.firebasestorage.app",
+messagingSenderId:"827363704121",
+appId:"1:827363704121:web:f2b8e6c4bbc521f1fdfce8",
+measurementId:"G-MBCQ91W6NE"
 };
 
-const firebaseApp = initializeApp(firebaseConfig);
-const auth = getAuth(firebaseApp);
-const db = getFirestore(firebaseApp);
-
-const ADMIN_EMAIL = "bhoimihir946@gmail.com";
-
-const $ = id => document.getElementById(id);
+const firebaseApp=initializeApp(firebaseConfig);
+const auth=getAuth(firebaseApp);
+const db=getFirestore(firebaseApp);
+const storage=getStorage(firebaseApp);
+const ADMIN_EMAIL="bhoimihir946@gmail.com";
+const $=id=>document.getElementById(id);
 
 function errorMessage(e){
-const errors = {
+const errors={
 "auth/email-already-in-use":"Email pehle se registered hai.",
 "auth/invalid-email":"Email sahi nahi hai.",
 "auth/weak-password":"Password kam se kam 6 characters rakho.",
@@ -208,7 +153,7 @@ const errors = {
 "auth/network-request-failed":"Internet check karo.",
 "permission-denied":"Firebase Rules permission nahi de rahe."
 };
-return errors[e.code] || e.message || "Kuch galat hua.";
+return errors[e.code]||e.message||"Kuch galat hua.";
 }
 
 function showMessage(id,msg,color="red"){
@@ -216,90 +161,59 @@ $(id).style.color=color;
 $(id).textContent=msg;
 }
 
+let currentUser=null;
+
 // SIGN UP
 $("signup").onclick=async()=>{
 const name=$("name").value.trim();
 const email=$("email").value.trim();
 const password=$("password").value;
-
 if(!name||!email||!password){
-showMessage("message","Sabhi details bharo.");
-return;
+showMessage("message","Sabhi details bharo.");return;
 }
-
 try{
-const result=await createUserWithEmailAndPassword(
-auth,email,password
-);
-
+const result=await createUserWithEmailAndPassword(auth,email,password);
 await updateProfile(result.user,{displayName:name});
-
 await setDoc(doc(db,"users",result.user.uid),{
-name,
-email,
-uid:result.user.uid,
-wallet:0,
+name,email,uid:result.user.uid,wallet:0,
 createdAt:serverTimestamp()
 });
-
 showMessage("message","Account ban gaya!","green");
-
-}catch(e){
-showMessage("message",errorMessage(e));
-}
+}catch(e){showMessage("message",errorMessage(e));}
 };
 
 // LOGIN
 $("signin").onclick=async()=>{
 const email=$("email").value.trim();
 const password=$("password").value;
-
 if(!email||!password){
-showMessage("message","Email aur password bharo.");
-return;
+showMessage("message","Email aur password bharo.");return;
 }
-
-try{
-await signInWithEmailAndPassword(auth,email,password);
-}catch(e){
-showMessage("message",errorMessage(e));
-}
+try{await signInWithEmailAndPassword(auth,email,password);}
+catch(e){showMessage("message",errorMessage(e));}
 };
 
 // FORGOT PASSWORD
 $("forgot").onclick=async()=>{
 const email=$("email").value.trim();
-
-if(!email){
-showMessage("message","Pehle email likho.");
-return;
-}
-
+if(!email){showMessage("message","Pehle email likho.");return;}
 try{
 await sendPasswordResetEmail(auth,email);
 showMessage("message","Reset link email par bhej diya!","green");
-}catch(e){
-showMessage("message",errorMessage(e));
-}
+}catch(e){showMessage("message",errorMessage(e));}
 };
 
-// LOGOUT
-async function logout(){
-await signOut(auth);
-}
+async function logout(){await signOut(auth);}
 $("logout").onclick=logout;
 $("adminLogout").onclick=logout;
 
 // AUTH STATE
 onAuthStateChanged(auth,async user=>{
+currentUser=user;
 $("login").style.display="none";
 $("app").style.display="none";
 $("admin").style.display="none";
-
-if(!user){
-$("login").style.display="block";
-return;
-}
+if(!user){$("login").style.display="block";return;}
 
 if(user.email===ADMIN_EMAIL){
 $("admin").style.display="block";
@@ -310,26 +224,21 @@ return;
 
 try{
 const userRef=doc(db,"users",user.uid);
-let userSnap=await getDoc(userRef);
-
-if(!userSnap.exists()){
+let snap=await getDoc(userRef);
+if(!snap.exists()){
 await setDoc(userRef,{
 name:user.displayName||"User",
-email:user.email,
-uid:user.uid,
-wallet:0,
+email:user.email,uid:user.uid,wallet:0,
 createdAt:serverTimestamp()
 });
-userSnap=await getDoc(userRef);
+snap=await getDoc(userRef);
 }
-
 $("app").style.display="block";
 $("welcome").textContent="Welcome "+(user.displayName||"User")+"!";
 $("userEmail").textContent=user.email;
-$("wallet").textContent="₹"+(userSnap.data().wallet||0);
-
+$("wallet").textContent="₹"+(snap.data().wallet||0);
 loadUserTasks();
-
+loadMySubmissions();
 }catch(e){
 $("login").style.display="block";
 showMessage("message",errorMessage(e));
@@ -340,37 +249,100 @@ showMessage("message",errorMessage(e));
 async function loadUserTasks(){
 const box=$("userTasks");
 box.textContent="Loading Tasks...";
-
 try{
 const snap=await getDocs(collection(db,"tasks"));
 box.innerHTML="";
+if(snap.empty){box.textContent="Abhi koi Task nahi hai.";return;}
 
-if(snap.empty){
-box.textContent="अभी कोई Task उपलब्ध नहीं है।";
-return;
-}
-
-snap.forEach(d=>{
+for(const d of snap.docs){
 const t=d.data();
 const div=document.createElement("div");
 div.className="task";
 
 const title=document.createElement("h3");
 title.textContent=t.title||"Task";
-
-const description=document.createElement("p");
-description.textContent=t.description||"";
-
+const desc=document.createElement("p");
+desc.textContent=t.description||"";
 const reward=document.createElement("b");
 reward.textContent="Reward: ₹"+(t.reward||0);
 
-div.append(title,description,reward);
-box.appendChild(div);
+const file=document.createElement("input");
+file.type="file";
+file.accept="image/*";
+
+const btn=document.createElement("button");
+btn.textContent="Submit Proof";
+
+btn.onclick=async()=>{
+const selected=file.files[0];
+if(!selected){alert("Pehle screenshot select karo.");return;}
+if(!selected.type.startsWith("image/")){
+alert("Sirf image upload karo.");return;
+}
+if(selected.size>5*1024*1024){
+alert("Image 5 MB se chhoti honi chahiye.");return;
+}
+
+btn.disabled=true;
+btn.textContent="Uploading...";
+try{
+const submissionId=currentUser.uid+"_"+d.id;
+const submissionRef=doc(db,"submissions",submissionId);
+const old=await getDoc(submissionRef);
+
+if(old.exists() && old.data().status!=="rejected"){
+alert("Is task ka proof pehle hi submit ho chuka hai.");
+btn.disabled=false;btn.textContent="Submit Proof";return;
+}
+
+const path="proofs/"+currentUser.uid+"/"+submissionId+"_"+Date.now();
+const storageRef=ref(storage,path);
+await uploadBytes(storageRef,selected);
+const imageUrl=await getDownloadURL(storageRef);
+
+await setDoc(submissionRef,{
+uid:currentUser.uid,
+email:currentUser.email,
+taskId:d.id,
+taskTitle:t.title||"Task",
+reward:Number(t.reward)||0,
+imageUrl,
+storagePath:path,
+status:"pending",
+submittedAt:serverTimestamp()
 });
 
-}catch(e){
-box.textContent=errorMessage(e);
+alert("Proof successfully submit ho gaya!");
+loadMySubmissions();
+}catch(e){alert(errorMessage(e));}
+btn.disabled=false;btn.textContent="Submit Proof";
+};
+
+div.append(title,desc,reward,file,btn);
+box.appendChild(div);
 }
+}catch(e){box.textContent=errorMessage(e);}
+}
+
+// USER: MY SUBMISSIONS
+async function loadMySubmissions(){
+const box=$("mySubmissions");
+box.textContent="Loading...";
+try{
+const snap=await getDocs(collection(db,"submissions"));
+box.innerHTML="";
+const mine=snap.docs.filter(d=>d.data().uid===currentUser.uid);
+if(!mine.length){box.textContent="Abhi koi proof submit nahi kiya.";return;}
+mine.forEach(d=>{
+const s=d.data();
+const div=document.createElement("div");
+div.className="task";
+const p=document.createElement("p");
+p.textContent=s.taskTitle+" | ₹"+s.reward+" | Status: "+s.status;
+div.appendChild(p);
+box.appendChild(div);
+});
+}catch(e){box.textContent=errorMessage(e);}
 }
 
 // ADMIN: ADD TASK
@@ -378,216 +350,222 @@ $("addTask").onclick=async()=>{
 const title=$("taskTitle").value.trim();
 const description=$("taskDescription").value.trim();
 const reward=Number($("taskReward").value);
-
 if(!title||!description||!Number.isFinite(reward)||reward<=0){
-showMessage("taskMessage","Sahi Task details bharo.");
-return;
+showMessage("taskMessage","Sahi Task details bharo.");return;
 }
-
 try{
 await addDoc(collection(db,"tasks"),{
-title,
-description,
-reward,
-createdAt:serverTimestamp()
+title,description,reward,createdAt:serverTimestamp()
 });
-
 showMessage("taskMessage","Task successfully added!","green");
-
 $("taskTitle").value="";
 $("taskDescription").value="";
 $("taskReward").value="";
-
 loadAdminTasks();
-}catch(e){
-showMessage("taskMessage",errorMessage(e));
-}
+}catch(e){showMessage("taskMessage",errorMessage(e));}
 };
 
 // ADMIN: LOAD TASKS
 async function loadAdminTasks(){
 const box=$("adminTasks");
 box.textContent="Loading...";
-
 try{
 const snap=await getDocs(collection(db,"tasks"));
 box.innerHTML="";
-
-if(snap.empty){
-box.textContent="Abhi koi Task nahi hai.";
-return;
-}
-
+if(snap.empty){box.textContent="Abhi koi Task nahi hai.";return;}
 snap.forEach(d=>{
 const t=d.data();
 const div=document.createElement("div");
 div.className="task";
-
 const title=document.createElement("b");
 title.textContent=t.title||"Task";
-
 const info=document.createElement("p");
 info.textContent=(t.description||"")+" | ₹"+(t.reward||0);
-
 const btn=document.createElement("button");
-btn.className="danger";
-btn.textContent="Delete Task";
-
+btn.className="danger";btn.textContent="Delete Task";
 btn.onclick=async()=>{
 if(!confirm("Kya Task delete karna hai?"))return;
-
-try{
-await deleteDoc(doc(db,"tasks",d.id));
-loadAdminTasks();
-}catch(e){
-alert(errorMessage(e));
-}
+try{await deleteDoc(doc(db,"tasks",d.id));loadAdminTasks();}
+catch(e){alert(errorMessage(e));}
 };
+div.append(title,info,btn);box.appendChild(div);
+});
+}catch(e){box.textContent=errorMessage(e);}
+}
 
-div.append(title,info,btn);
+// ADMIN: PROOF APPROVAL
+async function loadAdminSubmissions(){
+const box=$("adminSubmissions");
+box.textContent="Loading...";
+try{
+const snap=await getDocs(collection(db,"submissions"));
+box.innerHTML="";
+if(snap.empty){box.textContent="Abhi koi proof nahi aaya.";return;}
+
+snap.forEach(d=>{
+const s=d.data();
+const div=document.createElement("div");
+div.className="task";
+const info=document.createElement("p");
+info.textContent=s.email+" | "+s.taskTitle+" | ₹"+s.reward+" | "+s.status;
+const img=document.createElement("img");
+img.className="proof-img";
+img.src=s.imageUrl;
+img.alt="Task proof";
+img.loading="lazy";
+div.append(info,img);
+
+if(s.status==="pending"){
+const approve=document.createElement("button");
+approve.className="green";
+approve.textContent="Approve";
+approve.onclick=()=>approveSubmission(d.id);
+
+const reject=document.createElement("button");
+reject.className="danger";
+reject.textContent="Reject";
+reject.onclick=()=>rejectSubmission(d.id);
+
+div.append(approve,reject);
+}
 box.appendChild(div);
 });
-
-}catch(e){
-box.textContent=errorMessage(e);
+}catch(e){box.textContent=errorMessage(e);}
 }
+
+// APPROVE: CREDIT WALLET ONLY ONCE
+async function approveSubmission(id){
+if(!confirm("Proof approve karke reward wallet mein add karein?"))return;
+try{
+await runTransaction(db,async transaction=>{
+const subRef=doc(db,"submissions",id);
+const subSnap=await transaction.get(subRef);
+if(!subSnap.exists())throw new Error("Submission nahi mila.");
+const s=subSnap.data();
+if(s.status!=="pending")throw new Error("Ye proof pehle process ho chuka hai.");
+
+const userRef=doc(db,"users",s.uid);
+const userSnap=await transaction.get(userRef);
+if(!userSnap.exists())throw new Error("User nahi mila.");
+
+const oldBalance=Number(userSnap.data().wallet)||0;
+const reward=Number(s.reward)||0;
+if(reward<=0)throw new Error("Reward galat hai.");
+
+transaction.update(userRef,{wallet:oldBalance+reward});
+transaction.update(subRef,{
+status:"approved",
+approvedAt:serverTimestamp()
+});
+});
+alert("Approved! Reward wallet mein add ho gaya.");
+loadAdminSubmissions();
+loadUsers();
+}catch(e){alert(errorMessage(e));}
+}
+
+// REJECT
+async function rejectSubmission(id){
+if(!confirm("Is proof ko reject karein?"))return;
+try{
+await updateDoc(doc(db,"submissions",id),{
+status:"rejected",
+rejectedAt:serverTimestamp()
+});
+alert("Proof rejected.");
+loadAdminSubmissions();
+}catch(e){alert(errorMessage(e));}
 }
 
 // ADMIN: LOAD USERS
 async function loadUsers(){
 const box=$("allUsers");
 box.textContent="Loading...";
-
 try{
 const snap=await getDocs(collection(db,"users"));
 box.innerHTML="";
-
-if(snap.empty){
-box.textContent="Koi User nahi mila.";
-return;
-}
-
+if(snap.empty){box.textContent="Koi User nahi mila.";return;}
 snap.forEach(d=>{
 const u=d.data();
 const div=document.createElement("div");
 div.className="task";
-
 const name=document.createElement("b");
 name.textContent=u.name||"User";
-
 const email=document.createElement("p");
 email.textContent=u.email||"";
-
 const wallet=document.createElement("p");
 wallet.textContent="Wallet: ₹"+(u.wallet||0);
-
 const uid=document.createElement("small");
 uid.textContent="UID: "+d.id;
-
 const btn=document.createElement("button");
 btn.textContent="Select User";
-
 btn.onclick=()=>{
 $("walletUid").value=d.id;
 $("walletAmount").value=Number(u.wallet)||0;
 $("walletUid").scrollIntoView({behavior:"smooth"});
 };
-
 div.append(name,email,wallet,uid,btn);
 box.appendChild(div);
 });
-
-}catch(e){
-box.textContent=errorMessage(e);
-}
+}catch(e){box.textContent=errorMessage(e);}
 }
 
 // ADMIN: UPDATE WALLET
 $("updateWallet").onclick=async()=>{
 const uid=$("walletUid").value.trim();
 const amount=Number($("walletAmount").value);
-
 if(!uid||!Number.isFinite(amount)||amount<0){
-showMessage("walletMessage","UID aur valid balance bharo.");
-return;
+showMessage("walletMessage","UID aur valid balance bharo.");return;
 }
-
 try{
-await updateDoc(doc(db,"users",uid),{
-wallet:amount
-});
-
+await updateDoc(doc(db,"users",uid),{wallet:amount});
 showMessage("walletMessage","Wallet updated successfully!","green");
 loadUsers();
-}catch(e){
-showMessage("walletMessage",errorMessage(e));
-}
+}catch(e){showMessage("walletMessage",errorMessage(e));}
 };
 
 // ADMIN: WITHDRAWALS
 async function loadWithdrawals(){
 const box=$("withdrawals");
 box.textContent="Loading...";
-
 try{
 const snap=await getDocs(collection(db,"withdrawals"));
 box.innerHTML="";
-
-if(snap.empty){
-box.textContent="Abhi koi Withdrawal Request nahi hai.";
-return;
-}
-
+if(snap.empty){box.textContent="Abhi koi Withdrawal Request nahi hai.";return;}
 snap.forEach(d=>{
 const w=d.data();
 const div=document.createElement("div");
 div.className="task";
-
 const info=document.createElement("p");
 info.textContent="UID: "+(w.uid||"")+" | Amount: ₹"+(w.amount||0)+" | Status: "+(w.status||"pending");
-
 div.appendChild(info);
-
 if(w.status==="pending"){
 const approve=document.createElement("button");
-approve.className="green";
-approve.textContent="Approve";
-
+approve.className="green";approve.textContent="Approve";
 approve.onclick=()=>updateWithdrawal(d.id,"approved");
-
 const reject=document.createElement("button");
-reject.className="danger";
-reject.textContent="Reject";
-
+reject.className="danger";reject.textContent="Reject";
 reject.onclick=()=>updateWithdrawal(d.id,"rejected");
-
 div.append(approve,reject);
 }
-
 box.appendChild(div);
 });
-
-}catch(e){
-box.textContent=errorMessage(e);
-}
+}catch(e){box.textContent=errorMessage(e);}
 }
 
 async function updateWithdrawal(id,status){
 try{
 await updateDoc(doc(db,"withdrawals",id),{status});
 loadWithdrawals();
-}catch(e){
-alert(errorMessage(e));
-}
+}catch(e){alert(errorMessage(e));}
 }
 
-// LOAD ADMIN DATA
 function loadAdmin(){
 loadAdminTasks();
 loadUsers();
 loadWithdrawals();
+loadAdminSubmissions();
 }
-
 </script>
 </body>
 </html>
