@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="hi">
 <head>
@@ -14,6 +15,7 @@ h1{font-size:22px}
 small{color:#a9b6c9}
 .field{width:100%;padding:13px;background:#0d1726;border:1px solid #293951;border-radius:10px;color:white;margin:8px 0 13px}
 .btn{padding:11px 15px;border:0;border-radius:10px;background:#45d6a2;color:#062016;font-weight:bold;margin:5px 3px;cursor:pointer}
+.btn:disabled{opacity:.5}
 .secondary{background:#293951;color:white}
 .danger{background:#a83c4b;color:white}
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
@@ -28,6 +30,7 @@ small{color:#a9b6c9}
 .user-card{background:#131e30;border:1px solid #293951;padding:13px;border-radius:12px;margin:10px 0;overflow-wrap:anywhere}
 .status{font-weight:bold;color:#ffd27a}
 #message{color:#45d6a2}
+.error{color:#ff8c8c}
 </style>
 </head>
 <body>
@@ -45,14 +48,18 @@ small{color:#a9b6c9}
 </div>
 <div class="card">
 <h3 id="authTitle">Signup</h3>
+
 <div id="nameBox">
 <label>नाम</label>
 <input id="name" class="field" placeholder="अपना नाम">
 </div>
+
 <label>Email</label>
 <input id="email" class="field" type="email" placeholder="Email">
+
 <label>Password</label>
 <input id="password" class="field" type="password" placeholder="कम से कम 6 अक्षर">
+
 <button class="btn" id="authButton">Signup करें</button>
 <button class="btn secondary" id="switch">पहले से अकाउंट है? Login</button>
 <p id="message"></p>
@@ -101,7 +108,6 @@ small{color:#a9b6c9}
 <small>Withdrawal के लिए उपलब्ध Demo Balance</small>
 <h2 id="availableBalance">₹0</h2>
 </div>
-
 <h3>Reward History</h3>
 <div class="card" id="history">अभी कोई Activity नहीं है।</div>
 </section>
@@ -189,442 +195,628 @@ Admin Panel केवल निर्धारित Admin Email से Login �
 </nav>
 
 <script type="module">
-import {initializeApp}
-from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 
 import {
-getAuth,createUserWithEmailAndPassword,
-signInWithEmailAndPassword,onAuthStateChanged,signOut
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 
 import {
-getFirestore,doc,getDoc,setDoc,collection,
-getDocs,serverTimestamp,query,where,updateDoc
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc,
+  collection,
+  getDocs,
+  serverTimestamp,
+  query,
+  where,
+  updateDoc
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
-const config={
-apiKey:"AIzaSyDpMnDSxtxfTxw0fsAICIFZINSNPR66e6I",
-authDomain:"mihir-task-earning.firebaseapp.com",
-projectId:"mihir-task-earning",
-storageBucket:"mihir-task-earning.firebasestorage.app",
-messagingSenderId:"380488765803",
-appId:"1:380488765803:web:b8ebe02a8bdc6ac1713c2e",
-measurementId:"G-X4T75JECBW"
+const config = {
+  apiKey: "AIzaSyDpMnDSxtxfTxw0fsAICIFZINSNPR66e6I",
+  authDomain: "mihir-task-earning.firebaseapp.com",
+  projectId: "mihir-task-earning",
+  storageBucket: "mihir-task-earning.firebasestorage.app",
+  messagingSenderId: "380488765803",
+  appId: "1:380488765803:web:b8ebe02a8bdc6ac1713c2e",
+  measurementId: "G-X4T75JECBW"
 };
 
-const ADMIN_EMAIL="bhoimihir946@gmail.com";
-const firebase=initializeApp(config);
-const auth=getAuth(firebase);
-const db=getFirestore(firebase);
-const $=id=>document.getElementById(id);
+const ADMIN_EMAIL = "bhoimihir946@gmail.com";
+const firebase = initializeApp(config);
+const auth = getAuth(firebase);
+const db = getFirestore(firebase);
+const $ = id => document.getElementById(id);
 
-const tasks=[
-{id:"typing",title:"हिंदी टाइपिंग अभ्यास",desc:"दिया गया वाक्य सही टाइप करें।",reward:5},
-{id:"safety",title:"ऑनलाइन सुरक्षा टिप",desc:"एक सुरक्षा टिप लिखें।",reward:3},
-{id:"quiz",title:"सामान्य ज्ञान सवाल",desc:"भारत की राजधानी बताएं।",reward:4}
+const tasks = [
+  {id:"typing",title:"हिंदी टाइपिंग अभ्यास",desc:"दिया गया वाक्य सही टाइप करें।",reward:5},
+  {id:"safety",title:"ऑनलाइन सुरक्षा टिप",desc:"एक सुरक्षा टिप लिखें।",reward:3},
+  {id:"quiz",title:"सामान्य ज्ञान सवाल",desc:"भारत की राजधानी बताएं।",reward:4}
 ];
 
-let currentUser=null;
-let userName="";
-let submissions=[];
-let withdrawals=[];
-let activeTask=null;
-let loginMode=false;
-let busy=false;
+let currentUser = null;
+let userName = "";
+let submissions = [];
+let withdrawals = [];
+let activeTask = null;
+let loginMode = false;
+let busy = false;
 
-function isAdmin(){
-return currentUser &&
-(currentUser.email||"").toLowerCase()===ADMIN_EMAIL;
+function isAdmin() {
+  return currentUser &&
+    (currentUser.email || "").toLowerCase() === ADMIN_EMAIL;
 }
 
-function escapeHTML(value){
-return String(value??"").replace(/[&<>"']/g,c=>({
-"&":"&amp;","<":"&lt;",">":"&gt;",
-'"':"&quot;","'":"&#039;"
-})[c]);
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, c => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#039;"
+  })[c]);
 }
 
-function say(message){
-$("message").textContent=message;
+function say(message) {
+  $("message").textContent = message;
 }
 
-$("switch").onclick=()=>{
-loginMode=!loginMode;
-$("authTitle").textContent=loginMode?"Login":"Signup";
-$("authButton").textContent=loginMode?"Login करें":"Signup करें";
-$("nameBox").classList.toggle("hidden",loginMode);
-$("switch").textContent=loginMode?
-"नया अकाउंट बनाएं":"पहले से अकाउंट है? Login";
-say("");
+$("switch").onclick = () => {
+  loginMode = !loginMode;
+  $("authTitle").textContent = loginMode ? "Login" : "Signup";
+  $("authButton").textContent = loginMode ? "Login करें" : "Signup करें";
+  $("nameBox").classList.toggle("hidden", loginMode);
+  $("switch").textContent = loginMode
+    ? "नया अकाउंट बनाएं"
+    : "पहले से अकाउंट है? Login";
+  say("");
 };
 
-$("authButton").onclick=async()=>{
-if(busy)return;
-const email=$("email").value.trim();
-const password=$("password").value;
-const name=$("name").value.trim();
+$("authButton").onclick = async () => {
+  if (busy) return;
 
-if(!email||!password||(!loginMode&&!name)){
-say("सभी जानकारी भरें।");return;
-}
-if(password.length<6){
-say("Password कम से कम 6 अक्षर का रखें।");return;
-}
+  const email = $("email").value.trim();
+  const password = $("password").value;
+  const name = $("name").value.trim();
 
-busy=true;
-$("authButton").disabled=true;
-try{
-if(loginMode){
-await signInWithEmailAndPassword(auth,email,password);
-}else{
-const result=await createUserWithEmailAndPassword(auth,email,password);
-await setDoc(doc(db,"users",result.user.uid),{
-name,email,withdrawableBalance:0,createdAt:serverTimestamp()
-});
-}
-}catch(e){
-const errors={
-"auth/email-already-in-use":"यह Email पहले से मौजूद है। Login करें।",
-"auth/invalid-email":"Email सही नहीं है।",
-"auth/weak-password":"Password मजबूत रखें।",
-"auth/invalid-credential":"Email या Password गलत है。",
-"auth/network-request-failed":"Internet Connection जांचें।"
-};
-say(errors[e.code]||e.message);
-}finally{
-busy=false;
-$("authButton").disabled=false;
-}
-};
+  if (!email || !password || (!loginMode && !name)) {
+    say("सभी जानकारी भरें।");
+    return;
+  }
 
-onAuthStateChanged(auth,async user=>{
-currentUser=user;
-if(!user){
-$("auth").classList.remove("hidden");
-$("app").classList.add("hidden");
-$("nav").classList.add("hidden");
-$("adminNav").classList.add("hidden");
-return;
-}
-$("auth").classList.add("hidden");
-$("app").classList.remove("hidden");
-$("nav").classList.remove("hidden");
-$("profileEmail").textContent=user.email||"";
-$("adminNav").classList.toggle("hidden",!isAdmin());
-try{await loadData();}
-catch(e){alert("Firebase Error: "+e.message);}
-});
+  if (password.length < 6) {
+    say("Password कम से कम 6 अक्षर का रखें।");
+    return;
+  }
 
-async function loadData(){
-const ref=doc(db,"users",currentUser.uid);
-const snap=await getDoc(ref);
-if(!snap.exists()){
-await setDoc(ref,{
-name:"",email:currentUser.email||"",
-withdrawableBalance:0,createdAt:serverTimestamp()
-});
-userName="";
-}else{userName=snap.data().name||"";}
+  busy = true;
+  $("authButton").disabled = true;
+  say(loginMode ? "Login हो रहा है..." : "Account बन रहा है...");
 
-$("profileName").value=userName;
-$("welcome").textContent=userName?
-"स्वागत है, "+userName+"!":"स्वागत है!";
-await loadSubmissions();
-await loadWithdrawals();
-}
-
-async function loadSubmissions(){
-const q=query(collection(db,"taskSubmissions"),
-where("uid","==",currentUser.uid));
-const snap=await getDocs(q);
-submissions=snap.docs.map(d=>({id:d.id,...d.data()}));
-render();
-}
-
-async function loadWithdrawals(){
-const q=query(collection(db,"withdrawalRequests"),
-where("uid","==",currentUser.uid));
-const snap=await getDocs(q);
-withdrawals=snap.docs.map(d=>({id:d.id,...d.data()}));
-render();
-}
-
-function getApprovedTotal(){
-return submissions
-.filter(s=>s.status==="approved")
-.reduce((sum,s)=>sum+Number(s.reward||0),0);
-}
-
-function getReservedTotal(){
-return withdrawals
-.filter(w=>w.status==="pending"||w.status==="approved")
-.reduce((sum,w)=>sum+Number(w.amount||0),0);
-}
-
-function getAvailable(){
-return Math.max(0,getApprovedTotal()-getReservedTotal());
-}
-
-function render(){
-const approved=submissions.filter(s=>s.status==="approved");
-const total=getApprovedTotal();
-const available=getAvailable();
-
-$("balance").textContent="₹"+total;
-$("walletBalance").textContent="₹"+total;
-$("count").textContent=approved.length;
-$("availableBalance").textContent="₹"+available;
-$("withdrawBalance").textContent="₹"+available;
-
-$("tasks").innerHTML=tasks.map(t=>{
-const existing=submissions.find(s=>s.taskId===t.id);
-let button="शुरू करें",disabled="";
-if(existing){
-button=existing.status==="approved"?"पूरा हुआ":
-existing.status==="rejected"?"Reject हुआ":"जांच में है";
-disabled="disabled";
-}
-return `
-<div class="card">
-<b>${escapeHTML(t.title)}</b>
-<p><small>${escapeHTML(t.desc)}</small></p>
-<span class="reward">Demo Reward +₹${t.reward}</span><br>
-<button class="btn" data-task="${t.id}" ${disabled}>${button}</button>
-</div>`;
-}).join("");
-
-document.querySelectorAll("[data-task]").forEach(b=>{
-b.onclick=()=>startTask(b.dataset.task);
-});
-
-$("history").innerHTML=approved.length?
-approved.map(s=>`
-<div class="user-card">
-<b>${escapeHTML(s.title)}</b>
-<p class="reward">+₹${Number(s.reward)}</p>
-<small>Approved Demo Reward</small>
-</div>`).join(""):"अभी कोई Approved Activity नहीं है।";
-
-$("myWithdrawals").innerHTML=withdrawals.length?
-withdrawals.map(w=>`
-<div class="user-card">
-<b>Request: ₹${Number(w.amount)}</b>
-<p>UPI ID: ${escapeHTML(w.upiId)}</p>
-<p class="status">Status: ${escapeHTML(w.status)}</p>
-<small>Demo Request</small>
-</div>`).join(""):"अभी कोई Request नहीं है।";
-}
-
-function startTask(id){
-const task=tasks.find(t=>t.id===id);
-if(!task)return;
-activeTask=task;
-$("proofTitle").textContent=task.title;
-$("proofDescription").textContent=task.desc;
-$("proofInput").value="";
-$("proofMessage").textContent="";
-$("proofBox").classList.remove("hidden");
-$("proofInput").focus();
-if(id==="typing")$("proofInput").placeholder="मुझे रोज़ कुछ नया सीखना पसंद है।";
-else if(id==="quiz")$("proofInput").placeholder="भारत की राजधानी क्या है?";
-else $("proofInput").placeholder="ऑनलाइन सुरक्षा की एक टिप लिखें।";
-}
-
-$("cancelProof").onclick=()=>{
-$("proofBox").classList.add("hidden");
-activeTask=null;
+  try {
+    if (loginMode) {
+      await signInWithEmailAndPassword(auth, email, password);
+    } else {
+      const result = await createUserWithEmailAndPassword(auth, email, password);
+      await setDoc(doc(db, "users", result.user.uid), {
+        name,
+        email,
+        withdrawableBalance: 0,
+        createdAt: serverTimestamp()
+      });
+    }
+  } catch (e) {
+    const errors = {
+      "auth/email-already-in-use":"यह Email पहले से मौजूद है। Login करें।",
+      "auth/invalid-email":"Email सही नहीं है।",
+      "auth/weak-password":"Password मजबूत रखें।",
+      "auth/invalid-credential":"Email या Password गलत है।",
+      "auth/network-request-failed":"Internet Connection जांचें।",
+      "auth/too-many-requests":"बहुत कोशिशें हुई हैं। थोड़ी देर बाद कोशिश करें।",
+      "auth/operation-not-allowed":"Firebase में Email/Password Login चालू करें।"
+    };
+    say(errors[e.code] || ("Error: " + e.message));
+  } finally {
+    busy = false;
+    $("authButton").disabled = false;
+  }
 };
 
-$("submitProof").onclick=async()=>{
-if(!activeTask||!currentUser)return;
-const proof=$("proofInput").value.trim();
-if(proof.length<3){$("proofMessage").textContent="अपना Proof लिखें।";return;}
-if(submissions.find(s=>s.taskId===activeTask.id)){
-$("proofMessage").textContent="इस Task का Proof पहले ही जमा है।";return;
-}
-$("submitProof").disabled=true;
-try{
-const task=activeTask;
-const submissionId=currentUser.uid+"_"+task.id;
-await setDoc(doc(db,"taskSubmissions",submissionId),{
-uid:currentUser.uid,email:currentUser.email||"",
-taskId:task.id,title:task.title,reward:task.reward,
-proof,status:"pending",createdAt:serverTimestamp()
+onAuthStateChanged(auth, async user => {
+  currentUser = user;
+
+  if (!user) {
+    $("auth").classList.remove("hidden");
+    $("app").classList.add("hidden");
+    $("nav").classList.add("hidden");
+    $("adminNav").classList.add("hidden");
+    return;
+  }
+
+  $("auth").classList.add("hidden");
+  $("app").classList.remove("hidden");
+  $("nav").classList.remove("hidden");
+  $("profileEmail").textContent = user.email || "";
+  $("adminNav").classList.toggle("hidden", !isAdmin());
+
+  try {
+    await loadData();
+    if (isAdmin()) {
+      await loadAdmin();
+      await loadProofs();
+      await loadAdminWithdrawals();
+    }
+  } catch (e) {
+    alert("Firebase Error: " + e.message);
+  }
 });
-$("proofMessage").textContent="Proof सफलतापूर्वक जमा हो गया!";
-$("proofBox").classList.add("hidden");
-activeTask=null;
-await loadSubmissions();
-}catch(e){$("proofMessage").textContent="Error: "+e.message;}
-finally{$("submitProof").disabled=false;}
+
+async function loadData() {
+  const ref = doc(db, "users", currentUser.uid);
+  const snap = await getDoc(ref);
+
+  if (!snap.exists()) {
+    await setDoc(ref, {
+      name: "",
+      email: currentUser.email || "",
+      withdrawableBalance: 0,
+      createdAt: serverTimestamp()
+    });
+    userName = "";
+  } else {
+    userName = snap.data().name || "";
+  }
+
+  $("profileName").value = userName;
+  $("welcome").textContent = userName
+    ? "स्वागत है, " + userName + "!"
+    : "स्वागत है!";
+
+  await loadSubmissions();
+  await loadWithdrawals();
+}
+
+async function loadSubmissions() {
+  const q = query(
+    collection(db, "taskSubmissions"),
+    where("uid", "==", currentUser.uid)
+  );
+  const snap = await getDocs(q);
+  submissions = snap.docs.map(d => ({id:d.id, ...d.data()}));
+  render();
+}
+
+async function loadWithdrawals() {
+  const q = query(
+    collection(db, "withdrawalRequests"),
+    where("uid", "==", currentUser.uid)
+  );
+  const snap = await getDocs(q);
+  withdrawals = snap.docs.map(d => ({id:d.id, ...d.data()}));
+  render();
+}
+
+function getApprovedTotal() {
+  return submissions
+    .filter(s => s.status === "approved")
+    .reduce((sum, s) => sum + Number(s.reward || 0), 0);
+}
+
+function getReservedTotal() {
+  return withdrawals
+    .filter(w => w.status === "pending" || w.status === "approved")
+    .reduce((sum, w) => sum + Number(w.amount || 0), 0);
+}
+
+function getAvailable() {
+  return Math.max(0, getApprovedTotal() - getReservedTotal());
+}
+
+function render() {
+  const approved = submissions.filter(s => s.status === "approved");
+  const total = getApprovedTotal();
+  const available = getAvailable();
+
+  $("balance").textContent = "₹" + total;
+  $("walletBalance").textContent = "₹" + total;
+  $("count").textContent = approved.length;
+  $("availableBalance").textContent = "₹" + available;
+  $("withdrawBalance").textContent = "₹" + available;
+
+  $("tasks").innerHTML = tasks.map(t => {
+    const existing = submissions.find(s => s.taskId === t.id);
+    let button = "शुरू करें";
+    let disabled = "";
+
+    if (existing) {
+      button = existing.status === "approved" ? "पूरा हुआ" :
+        existing.status === "rejected" ? "Reject हुआ" : "जांच में है";
+      disabled = "disabled";
+    }
+
+    return `
+      <div class="card">
+        <b>${escapeHTML(t.title)}</b>
+        <p><small>${escapeHTML(t.desc)}</small></p>
+        <span class="reward">Demo Reward +₹${t.reward}</span><br>
+        <button class="btn" data-task="${t.id}" ${disabled}>${button}</button>
+      </div>
+    `;
+  }).join("");
+
+  document.querySelectorAll("[data-task]").forEach(b => {
+    b.onclick = () => startTask(b.dataset.task);
+  });
+
+  $("history").innerHTML = approved.length
+    ? approved.map(s => `
+      <div class="user-card">
+        <b>${escapeHTML(s.title)}</b>
+        <p class="reward">+₹${Number(s.reward)}</p>
+        <small>Approved Demo Reward</small>
+      </div>
+    `).join("")
+    : "अभी कोई Approved Activity नहीं है।";
+
+  $("myWithdrawals").innerHTML = withdrawals.length
+    ? withdrawals.map(w => `
+      <div class="user-card">
+        <b>Request: ₹${Number(w.amount)}</b>
+        <p>UPI ID: ${escapeHTML(w.upiId)}</p>
+        <p class="status">Status: ${escapeHTML(w.status)}</p>
+        <small>Demo Request</small>
+      </div>
+    `).join("")
+    : "अभी कोई Request नहीं है।";
+}
+
+function startTask(id) {
+  const task = tasks.find(t => t.id === id);
+  if (!task) return;
+
+  activeTask = task;
+  $("proofTitle").textContent = task.title;
+  $("proofDescription").textContent = task.desc;
+  $("proofInput").value = "";
+  $("proofMessage").textContent = "";
+  $("proofBox").classList.remove("hidden");
+  $("proofInput").focus();
+
+  if (id === "typing") {
+    $("proofInput").placeholder = "मुझे रोज़ कुछ नया सीखना पसंद है।";
+  } else if (id === "quiz") {
+    $("proofInput").placeholder = "भारत की राजधानी क्या है?";
+  } else {
+    $("proofInput").placeholder = "ऑनलाइन सुरक्षा की एक टिप लिखें।";
+  }
+}
+
+$("cancelProof").onclick = () => {
+  $("proofBox").classList.add("hidden");
+  activeTask = null;
 };
 
-$("requestWithdraw").onclick=async()=>{
-const upi=$("upiId").value.trim();
-const amount=Number($("withdrawAmount").value);
-const available=getAvailable();
+$("submitProof").onclick = async () => {
+  if (!activeTask || !currentUser) return;
 
-if(!upi||upi.length<5||!upi.includes("@")){
-$("withdrawMessage").textContent="सही UPI ID लिखें।";return;
-}
-if(!Number.isFinite(amount)||amount<=0){
-$("withdrawMessage").textContent="सही Amount लिखें।";return;
-}
-if(amount>available){
-$("withdrawMessage").textContent="आपका उपलब्ध Demo Balance कम है।";return;
-}
-$("requestWithdraw").disabled=true;
-try{
-const requestId=currentUser.uid+"_"+Date.now();
-await setDoc(doc(db,"withdrawalRequests",requestId),{
-uid:currentUser.uid,
-email:currentUser.email||"",
-amount,
-upiId:upi,
-status:"pending",
-createdAt:serverTimestamp()
-});
-$("withdrawMessage").textContent="Demo Withdrawal Request भेज दी गई!";
-$("upiId").value="";
-$("withdrawAmount").value="";
-await loadWithdrawals();
-}catch(e){
-$("withdrawMessage").textContent="Error: "+e.message;
-}finally{$("requestWithdraw").disabled=false;}
+  const proof = $("proofInput").value.trim();
+
+  if (proof.length < 3) {
+    $("proofMessage").textContent = "अपना Proof लिखें।";
+    return;
+  }
+
+  if (submissions.find(s => s.taskId === activeTask.id)) {
+    $("proofMessage").textContent = "इस Task का Proof पहले ही जमा है।";
+    return;
+  }
+
+  $("submitProof").disabled = true;
+
+  try {
+    const task = activeTask;
+    const submissionId = currentUser.uid + "_" + task.id;
+
+    await setDoc(doc(db, "taskSubmissions", submissionId), {
+      uid: currentUser.uid,
+      email: currentUser.email || "",
+      taskId: task.id,
+      title: task.title,
+      reward: task.reward,
+      proof,
+      status: "pending",
+      createdAt: serverTimestamp()
+    });
+
+    $("proofMessage").textContent = "Proof सफलतापूर्वक जमा हो गया!";
+    $("proofBox").classList.add("hidden");
+    activeTask = null;
+    await loadSubmissions();
+  } catch (e) {
+    $("proofMessage").textContent = "Error: " + e.message;
+  } finally {
+    $("submitProof").disabled = false;
+  }
 };
 
-$("saveProfile").onclick=async()=>{
-const name=$("profileName").value.trim();
-if(!name||name.length>30){alert("सही नाम लिखें।");return;}
-try{
-await updateDoc(doc(db,"users",currentUser.uid),{
-name,updatedAt:serverTimestamp()
-});
-userName=name;
-$("welcome").textContent="स्वागत है, "+name+"!";
-alert("नाम सेव हो गया!");
-}catch(e){alert("Error: "+e.message);}
+$("requestWithdraw").onclick = async () => {
+  const upi = $("upiId").value.trim();
+  const amount = Number($("withdrawAmount").value);
+  const available = getAvailable();
+
+  if (!upi || upi.length < 5 || !upi.includes("@")) {
+    $("withdrawMessage").textContent = "सही UPI ID लिखें।";
+    return;
+  }
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+    $("withdrawMessage").textContent = "सही Amount लिखें।";
+    return;
+  }
+
+  if (amount > available) {
+    $("withdrawMessage").textContent = "आपका उपलब्ध Demo Balance कम है।";
+    return;
+  }
+
+  $("requestWithdraw").disabled = true;
+
+  try {
+    const requestId = currentUser.uid + "_" + Date.now();
+
+    await setDoc(doc(db, "withdrawalRequests", requestId), {
+      uid: currentUser.uid,
+      email: currentUser.email || "",
+      amount,
+      upiId: upi,
+      status: "pending",
+      createdAt: serverTimestamp()
+    });
+
+    $("withdrawMessage").textContent = "Demo Withdrawal Request भेज दी गई!";
+    $("upiId").value = "";
+    $("withdrawAmount").value = "";
+    await loadWithdrawals();
+  } catch (e) {
+    $("withdrawMessage").textContent = "Error: " + e.message;
+  } finally {
+    $("requestWithdraw").disabled = false;
+  }
 };
 
-$("logout").onclick=async()=>{await signOut(auth);};
+$("saveProfile").onclick = async () => {
+  const name = $("profileName").value.trim();
 
-async function loadAdmin(){
-if(!isAdmin())return;
-$("adminMessage").textContent="Users लोड हो रहे हैं...";
-try{
-const snap=await getDocs(collection(db,"users"));
-const users=snap.docs.map(d=>d.data());
-const all=await getDocs(collection(db,"taskSubmissions"));
-const rows=all.docs.map(d=>d.data());
-$("totalUsers").textContent=users.length;
-$("totalCompletions").textContent=rows.filter(s=>s.status==="approved").length;
-$("userList").innerHTML=users.map((u,i)=>`
-<div class="user-card">
-<b>${i+1}. ${escapeHTML(u.name||"नाम नहीं दिया")}</b>
-<p>${escapeHTML(u.email||"Email उपलब्ध नहीं")}</p>
-</div>`).join("")||"कोई User नहीं है।";
-$("adminMessage").textContent="User List अपडेट हो गई।";
-}catch(e){$("adminMessage").textContent="Error: "+e.message;}
+  if (!name || name.length > 30) {
+    alert("सही नाम लिखें।");
+    return;
+  }
+
+  try {
+    await updateDoc(doc(db, "users", currentUser.uid), {
+      name,
+      updatedAt: serverTimestamp()
+    });
+    userName = name;
+    $("welcome").textContent = "स्वागत है, " + name + "!";
+    alert("नाम सेव हो गया!");
+  } catch (e) {
+    alert("Error: " + e.message);
+  }
+};
+
+$("logout").onclick = async () => {
+  await signOut(auth);
+};
+
+async function loadAdmin() {
+  if (!isAdmin()) return;
+
+  $("adminMessage").textContent = "Users लोड हो रहे हैं...";
+
+  try {
+    const snap = await getDocs(collection(db, "users"));
+    const users = snap.docs.map(d => d.data());
+
+    const all = await getDocs(collection(db, "taskSubmissions"));
+    const rows = all.docs.map(d => d.data());
+
+    $("totalUsers").textContent = users.length;
+    $("totalCompletions").textContent =
+      rows.filter(s => s.status === "approved").length;
+
+    $("userList").innerHTML = users.map((u, i) => `
+      <div class="user-card">
+        <b>${i + 1}. ${escapeHTML(u.name || "नाम नहीं दिया")}</b>
+        <p>${escapeHTML(u.email || "Email उपलब्ध नहीं")}</p>
+      </div>
+    `).join("") || "कोई User नहीं है।";
+
+    $("adminMessage").textContent = "User List अपडेट हो गई।";
+  } catch (e) {
+    $("adminMessage").textContent = "Error: " + e.message;
+  }
 }
 
-async function loadProofs(){
-if(!isAdmin())return;
-$("proofAdminMessage").textContent="Proof लोड हो रहे हैं...";
-try{
-const snap=await getDocs(collection(db,"taskSubmissions"));
-const rows=snap.docs.map(d=>({id:d.id,...d.data()}));
-rows.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
-$("proofList").innerHTML=rows.length?rows.map(r=>`
-<div class="user-card">
-<b>${escapeHTML(r.title)}</b>
-<p>Email: ${escapeHTML(r.email)}</p>
-<p>Proof: ${escapeHTML(r.proof)}</p>
-<p>Reward: ₹${Number(r.reward)}</p>
-<p class="status">Status: ${escapeHTML(r.status)}</p>
-${r.status==="pending"?`
-<button class="btn" data-approve="${r.id}">Approve</button>
-<button class="btn danger" data-reject="${r.id}">Reject</button>`:""}
-</div>`).join(""):"अभी कोई Proof नहीं है।";
+async function loadProofs() {
+  if (!isAdmin()) return;
 
-document.querySelectorAll("[data-approve]").forEach(b=>{
-b.onclick=()=>reviewProof(b.dataset.approve,"approved");
-});
-document.querySelectorAll("[data-reject]").forEach(b=>{
-b.onclick=()=>reviewProof(b.dataset.reject,"rejected");
-});
-$("proofAdminMessage").textContent="Proof List अपडेट हो गई।";
-}catch(e){$("proofAdminMessage").textContent="Error: "+e.message;}
+  $("proofAdminMessage").textContent = "Proof लोड हो रहे हैं...";
+
+  try {
+    const snap = await getDocs(collection(db, "taskSubmissions"));
+    const rows = snap.docs.map(d => ({id:d.id, ...d.data()}));
+
+    rows.sort((a, b) =>
+      (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)
+    );
+
+    $("proofList").innerHTML = rows.length
+      ? rows.map(r => `
+        <div class="user-card">
+          <b>${escapeHTML(r.title)}</b>
+          <p>Email: ${escapeHTML(r.email)}</p>
+          <p>Proof: ${escapeHTML(r.proof)}</p>
+          <p>Reward: ₹${Number(r.reward)}</p>
+          <p class="status">Status: ${escapeHTML(r.status)}</p>
+          ${r.status === "pending" ? `
+            <button class="btn" data-approve="${r.id}">Approve</button>
+            <button class="btn danger" data-reject="${r.id}">Reject</button>
+          ` : ""}
+        </div>
+      `).join("")
+      : "अभी कोई Proof नहीं है।";
+
+    document.querySelectorAll("[data-approve]").forEach(b => {
+      b.onclick = () => reviewProof(b.dataset.approve, "approved");
+    });
+
+    document.querySelectorAll("[data-reject]").forEach(b => {
+      b.onclick = () => reviewProof(b.dataset.reject, "rejected");
+    });
+
+    $("proofAdminMessage").textContent = "Proof List अपडेट हो गई।";
+  } catch (e) {
+    $("proofAdminMessage").textContent = "Error: " + e.message;
+  }
 }
 
-async function reviewProof(id,status){
-if(!isAdmin())return;
-if(!confirm(status==="approved"?"क्या इस Task को Approve करना है?":"क्या इस Task को Reject करना है?"))return;
-try{
-const ref=doc(db,"taskSubmissions",id);
-const snap=await getDoc(ref);
-if(!snap.exists())throw new Error("Proof नहीं मिला।");
-if(snap.data().status!=="pending")throw new Error("यह Proof पहले ही Review हो चुका है।");
-await updateDoc(ref,{status,reviewedAt:serverTimestamp()});
-alert(status==="approved"?"Task Approve हो गया!":"Task Reject हो गया!");
-await loadProofs();
-}catch(e){alert("Error: "+e.message);}
+async function reviewProof(id, status) {
+  if (!isAdmin()) return;
+
+  const question = status === "approved"
+    ? "क्या इस Task को Approve करना है?"
+    : "क्या इस Task को Reject करना है?";
+
+  if (!confirm(question)) return;
+
+  try {
+    const ref = doc(db, "taskSubmissions", id);
+    const snap = await getDoc(ref);
+
+    if (!snap.exists()) throw new Error("Proof नहीं मिला।");
+    if (snap.data().status !== "pending") {
+      throw new Error("यह Proof पहले ही Review हो चुका है।");
+    }
+
+    await updateDoc(ref, {
+      status,
+      reviewedAt: serverTimestamp()
+    });
+
+    alert(status === "approved" ? "Task Approve हो गया!" : "Task Reject हो गया!");
+    await loadProofs();
+  } catch (e) {
+    alert("Error: " + e.message);
+  }
 }
 
-async function loadAdminWithdrawals(){
-if(!isAdmin())return;
-$("withdrawAdminMessage").textContent="Requests लोड हो रही हैं...";
-try{
-const snap=await getDocs(collection(db,"withdrawalRequests"));
-const rows=snap.docs.map(d=>({id:d.id,...d.data()}));
-rows.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+async function loadAdminWithdrawals() {
+  if (!isAdmin()) return;
 
-$("withdrawalList").innerHTML=rows.length?rows.map(r=>`
-<div class="user-card">
-<b>Withdrawal: ₹${Number(r.amount)}</b>
-<p>Email: ${escapeHTML(r.email)}</p>
-<p>UPI ID: ${escapeHTML(r.upiId)}</p>
-<p class="status">Status: ${escapeHTML(r.status)}</p>
-${r.status==="pending"?`
-<button class="btn" data-wapprove="${r.id}">Approve</button>
-<button class="btn danger" data-wreject="${r.id}">Reject</button>`:""}
-</div>`).join(""):"अभी कोई Withdrawal Request नहीं है।";
+  $("withdrawAdminMessage").textContent = "Requests लोड हो रही हैं...";
 
-document.querySelectorAll("[data-wapprove]").forEach(b=>{
-b.onclick=()=>reviewWithdrawal(b.dataset.wapprove,"approved");
-});
-document.querySelectorAll("[data-wreject]").forEach(b=>{
-b.onclick=()=>reviewWithdrawal(b.dataset.wreject,"rejected");
-});
-$("withdrawAdminMessage").textContent="Withdrawal Requests अपडेट हो गईं।";
-}catch(e){$("withdrawAdminMessage").textContent="Error: "+e.message;}
+  try {
+    const snap = await getDocs(collection(db, "withdrawalRequests"));
+    const rows = snap.docs.map(d => ({id:d.id, ...d.data()}));
+
+    rows.sort((a, b) =>
+      (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)
+    );
+
+    $("withdrawalList").innerHTML = rows.length
+      ? rows.map(r => `
+        <div class="user-card">
+          <b>Withdrawal: ₹${Number(r.amount)}</b>
+          <p>Email: ${escapeHTML(r.email)}</p>
+          <p>UPI ID: ${escapeHTML(r.upiId)}</p>
+          <p class="status">Status: ${escapeHTML(r.status)}</p>
+          ${r.status === "pending" ? `
+            <button class="btn" data-wapprove="${r.id}">Approve</button>
+            <button class="btn danger" data-wreject="${r.id}">Reject</button>
+          ` : ""}
+        </div>
+      `).join("")
+      : "अभी कोई Withdrawal Request नहीं है।";
+
+    document.querySelectorAll("[data-wapprove]").forEach(b => {
+      b.onclick = () => reviewWithdrawal(b.dataset.wapprove, "approved");
+    });
+
+    document.querySelectorAll("[data-wreject]").forEach(b => {
+      b.onclick = () => reviewWithdrawal(b.dataset.wreject, "rejected");
+    });
+
+    $("withdrawAdminMessage").textContent = "Withdrawal Requests अपडेट हो गईं।";
+  } catch (e) {
+    $("withdrawAdminMessage").textContent = "Error: " + e.message;
+  }
 }
 
-async function reviewWithdrawal(id,status){
-if(!isAdmin())return;
-const question=status==="approved"?
-"Demo Request Approve करना है? इससे असली UPI भुगतान नहीं होगा।":
-"इस Request को Reject करना है?";
-if(!confirm(question))return;
-try{
-const ref=doc(db,"withdrawalRequests",id);
-const snap=await getDoc(ref);
-if(!snap.exists())throw new Error("Request नहीं मिली।");
-if(snap.data().status!=="pending")throw new Error("यह Request पहले Review हो चुकी है।");
-await updateDoc(ref,{status,reviewedAt:serverTimestamp()});
-alert("Demo Request "+(status==="approved"?"Approve":"Reject")+" हो गई।");
-await loadAdminWithdrawals();
-await loadWithdrawals();
-}catch(e){alert("Error: "+e.message);}
+async function reviewWithdrawal(id, status) {
+  if (!isAdmin()) return;
+
+  const question = status === "approved"
+    ? "Demo Request Approve करना है? इससे असली UPI भुगतान नहीं होगा।"
+    : "इस Request को Reject करना है?";
+
+  if (!confirm(question)) return;
+
+  try {
+    const ref = doc(db, "withdrawalRequests", id);
+    const snap = await getDoc(ref);
+
+    if (!snap.exists()) throw new Error("Request नहीं मिली।");
+    if (snap.data().status !== "pending") {
+      throw new Error("यह Request पहले Review हो चुकी है।");
+    }
+
+    await updateDoc(ref, {
+      status,
+      reviewedAt: serverTimestamp()
+    });
+
+    alert("Demo Request " +
+      (status === "approved" ? "Approve" : "Reject") + " हो गई।");
+
+    await loadAdminWithdrawals();
+    await loadWithdrawals();
+  } catch (e) {
+    alert("Error: " + e.message);
+  }
 }
 
-$("refreshAdmin").onclick=loadAdmin;
-$("refreshProofs").onclick=loadProofs;
-$("refreshWithdrawals").onclick=loadAdminWithdrawals;
+$("refreshAdmin").onclick = loadAdmin;
+$("refreshProofs").onclick = loadProofs;
+$("refreshWithdrawals").onclick = loadAdminWithdrawals;
 
-document.querySelectorAll(".nav button[data-tab]").forEach(b=>{
-b.onclick=()=>{
-document.querySelectorAll(".nav button[data-tab]").forEach(x=>{
-x.classList.toggle("active",x===b);
+document.querySelectorAll(".nav button[data-tab]").forEach(b => {
+  b.onclick = () => {
+    const tab = b.dataset.tab;
+
+    if (tab === "admin" && !isAdmin()) return;
+
+    document.querySelectorAll(".nav button[data-tab]").forEach(x => {
+      x.classList.toggle("active", x === b);
+    });
+
+    ["home", "wallet", "withdraw", "profile", "admin"].forEach(id => {
+      $(id).classList.toggle("hidden", id !== tab);
+    });
+
+    if (tab === "admin") {
+      loadAdmin();
+      loadProofs();
+      loadAdminWithdrawals();
+    }
+  };
 });
-["home","wallet","withdraw","profile","admin"].forEach(id=>{
-$(id
+</script>
+</body>
+</html>
