@@ -7,7 +7,7 @@
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#0b1220;color:white;font-family:Arial,sans-serif}
-.wrap{max-width:700px;margin:auto;padding:18px 15px 90px}
+.wrap{max-width:700px;margin:auto;padding:18px 15px 100px}
 .card{background:#131e30;border:1px solid #293951;border-radius:16px;padding:16px;margin:12px 0}
 .hero{background:linear-gradient(120deg,#1b654f,#164b69);padding:20px;border-radius:18px}
 h1{font-size:21px}
@@ -23,11 +23,12 @@ small{color:#a9b6c9}
 .taskbody{flex:1}
 .reward{color:#45d6a2;font-weight:bold}
 .hidden{display:none!important}
-.nav{position:fixed;bottom:0;left:0;right:0;background:#0d1726;display:flex;justify-content:center;gap:18px;padding:12px}
-.nav button{background:none;color:white;border:0;padding:10px}
+.nav{position:fixed;bottom:0;left:0;right:0;background:#0d1726;display:flex;justify-content:center;gap:8px;padding:10px;flex-wrap:wrap}
+.nav button{background:none;color:white;border:0;padding:10px;cursor:pointer}
 .nav .active{color:#45d6a2}
 .notice{background:#302819;padding:13px;border-radius:12px;color:#ffe5ad;font-size:13px;line-height:1.5}
 #message{color:#45d6a2}
+.user-card{background:#131e30;border:1px solid #293951;padding:13px;border-radius:12px;margin:10px 0;overflow-wrap:anywhere}
 </style>
 </head>
 <body>
@@ -104,6 +105,32 @@ small{color:#a9b6c9}
 <button class="btn secondary" id="logout">Logout</button>
 </div>
 </section>
+
+<section id="admin" class="hidden">
+<div class="hero">
+<h2>🛡️ Admin Panel</h2>
+<p>Welcome, Mihir Admin</p>
+</div>
+<div class="stats">
+<div class="stat">
+<small>Total Users</small>
+<strong id="totalUsers">0</strong>
+</div>
+<div class="stat">
+<small>Completed Tasks</small>
+<strong id="totalCompletions">0</strong>
+</div>
+</div>
+<div class="card">
+<h3>Registered Users</h3>
+<button class="btn" id="refreshAdmin">Refresh Users</button>
+<p id="adminMessage">Users की जानकारी लोड करने के लिए Refresh दबाएं।</p>
+<div id="userList"></div>
+</div>
+<div class="notice">
+Admin Panel केवल निर्धारित Admin Email से Login करने पर दिखाई देगा।
+</div>
+</section>
 </div>
 </div>
 
@@ -111,6 +138,7 @@ small{color:#a9b6c9}
 <button class="active" data-tab="home">🏠 Home</button>
 <button data-tab="wallet">👛 Wallet</button>
 <button data-tab="profile">👤 Profile</button>
+<button id="adminNav" class="hidden" data-tab="admin">🛡️ Admin</button>
 </nav>
 
 <script type="module">
@@ -144,6 +172,7 @@ const config={
  measurementId:"G-X4T75JECBW"
 };
 
+const ADMIN_EMAIL="bhoimihir946@gmail.com";
 const firebaseApp=initializeApp(config);
 const auth=getAuth(firebaseApp);
 const db=getFirestore(firebaseApp);
@@ -163,6 +192,16 @@ let busy=false;
 
 function say(message){
  $("message").textContent=message;
+}
+
+function escapeHTML(value){
+ return String(value??"").replace(/[&<>"']/g,char=>({
+  "&":"&amp;",
+  "<":"&lt;",
+  ">":"&gt;",
+  '"':"&quot;",
+  "'":"&#039;"
+ })[char]);
 }
 
 $("switch").onclick=()=>{
@@ -199,7 +238,6 @@ $("authButton").onclick=async()=>{
    await signInWithEmailAndPassword(auth,email,password);
   }else{
    const result=await createUserWithEmailAndPassword(auth,email,password);
-
    await setDoc(doc(db,"users",result.user.uid),{
     name:name,
     email:email,
@@ -228,6 +266,7 @@ onAuthStateChanged(auth,async user=>{
   $("auth").classList.remove("hidden");
   $("app").classList.add("hidden");
   $("nav").classList.add("hidden");
+  $("adminNav").classList.add("hidden");
   return;
  }
 
@@ -235,6 +274,10 @@ onAuthStateChanged(auth,async user=>{
  $("app").classList.remove("hidden");
  $("nav").classList.remove("hidden");
  $("profileEmail").textContent=user.email||"";
+
+ const isAdmin=(user.email||"").toLowerCase()===ADMIN_EMAIL;
+
+ $("adminNav").classList.toggle("hidden",!isAdmin);
 
  try{
   await loadData();
@@ -384,6 +427,59 @@ $("saveProfile").onclick=async()=>{
  }
 };
 
+async function loadAdmin(){
+ if(!currentUser||
+    (currentUser.email||"").toLowerCase()!==ADMIN_EMAIL){
+  alert("Admin access नहीं है।");
+  return;
+ }
+
+ $("adminMessage").textContent="Users लोड हो रहे हैं...";
+ $("userList").innerHTML="";
+
+ try{
+  const usersSnapshot=await getDocs(collection(db,"users"));
+  let totalCompletions=0;
+  const users=[];
+
+  for(const userDoc of usersSnapshot.docs){
+   const data=userDoc.data();
+   const completionSnapshot=await getDocs(
+    collection(db,"users",userDoc.id,"completions")
+   );
+
+   totalCompletions+=completionSnapshot.size;
+
+   users.push({
+    name:data.name||"नाम नहीं दिया",
+    email:data.email||"Email उपलब्ध नहीं",
+    tasks:completionSnapshot.size
+   });
+  }
+
+  $("totalUsers").textContent=users.length;
+  $("totalCompletions").textContent=totalCompletions;
+
+  if(!users.length){
+   $("userList").innerHTML="<p>अभी कोई User नहीं है।</p>";
+  }else{
+   $("userList").innerHTML=users.map((u,index)=>`
+    <div class="user-card">
+     <b>${index+1}. ${escapeHTML(u.name)}</b>
+     <p>${escapeHTML(u.email)}</p>
+     <small>Completed Tasks: ${u.tasks}</small>
+    </div>
+   `).join("");
+  }
+
+  $("adminMessage").textContent="User list अपडेट हो गई।";
+ }catch(e){
+  $("adminMessage").textContent="Error: "+e.message;
+ }
+}
+
+$("refreshAdmin").onclick=loadAdmin;
+
 $("logout").onclick=async()=>{
  try{
   await signOut(auth);
@@ -392,17 +488,22 @@ $("logout").onclick=async()=>{
  }
 };
 
-document.querySelectorAll(".nav button").forEach(b=>{
+document.querySelectorAll(".nav button[data-tab]").forEach(b=>{
  b.onclick=()=>{
-  document.querySelectorAll(".nav button").forEach(x=>{
+  document.querySelectorAll(".nav button[data-tab]").forEach(x=>{
    x.classList.toggle("active",x===b);
   });
 
-  ["home","wallet","profile"].forEach(id=>{
+  ["home","wallet","profile","admin"].forEach(id=>{
    $(id).classList.toggle("hidden",id!==b.dataset.tab);
   });
+
+  if(b.dataset.tab==="admin"){
+   loadAdmin();
+  }
  };
 });
 </script>
 </body>
-</html>
+ </html>
+ 
