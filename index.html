@@ -1,283 +1,327 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="hi">
 <head>
-<meta charset="utf-8">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#101827">
 <title>Mihir Task Earning</title>
-
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#0b1220;color:#f4f7fb;font:15px system-ui,sans-serif}
-.wrap{max-width:720px;margin:auto;padding:18px 15px 90px}
-.top,.brand,.task,.nav{display:flex;align-items:center}
-.top{justify-content:space-between;margin:8px 0 20px}
-.brand{gap:10px}
-.logo{background:linear-gradient(135deg,#45d6a2,#3988ff);color:#07131d;border-radius:13px;padding:12px;font-weight:900}
-.brand h1{font-size:18px;margin:0}
-.muted,small{color:#a9b6c9}
-.pill{border:1px solid #293951;border-radius:30px;padding:6px 9px;font-size:11px;color:#a9b6c9}
-.hero{background:linear-gradient(120deg,#1b654f,#164b69);padding:20px;border-radius:20px}
-.hero h2{margin:7px 0}
-.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:13px 0}
-.stat,.card{background:#131e30;border:1px solid #293951;border-radius:17px;padding:15px}
-.stat strong{display:block;font-size:23px;margin-top:5px}
-.head{display:flex;justify-content:space-between;margin:22px 2px 10px}
-.head h3{margin:0}
-.task{gap:10px;margin-bottom:10px}
-.ico{font-size:22px;background:#1a2940;padding:12px;border-radius:12px}
+body{margin:0;background:#0b1220;color:white;font-family:Arial,sans-serif}
+.wrap{max-width:700px;margin:auto;padding:18px 15px 90px}
+.card{background:#131e30;border:1px solid #293951;border-radius:16px;padding:16px;margin:12px 0}
+.hero{background:linear-gradient(120deg,#1b654f,#164b69);padding:20px;border-radius:18px}
+h1{font-size:21px}
+small{color:#a9b6c9}
+.field{width:100%;padding:13px;background:#0d1726;border:1px solid #293951;border-radius:10px;color:white;margin:8px 0 13px}
+.btn{padding:11px 15px;border:0;border-radius:10px;background:#45d6a2;color:#062016;font-weight:bold;margin:5px 3px;cursor:pointer}
+.secondary{background:#293951;color:white}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:#131e30;border-radius:14px;padding:15px}
+.stat strong{display:block;font-size:23px;margin-top:7px}
+.task{display:flex;align-items:center;gap:12px}
 .taskbody{flex:1}
-.taskbody b,.taskbody small{display:block}
-.reward{color:#45d6a2;font-weight:800;white-space:nowrap}
-.btn{border:0;border-radius:11px;padding:10px 12px;background:#45d6a2;color:#062016;font-weight:800;margin-top:7px}
-.btn:disabled{opacity:.5}
-.notice{background:#302819;border:1px solid #70582c;color:#ffe5ad;border-radius:13px;padding:13px;font-size:13px;line-height:1.5;margin-top:14px}
+.reward{color:#45d6a2;font-weight:bold}
 .hidden{display:none!important}
-.field{width:100%;padding:12px;background:#0d1726;border:1px solid #293951;border-radius:11px;color:white;margin:8px 0 12px}
-.nav{position:fixed;bottom:0;left:0;right:0;justify-content:center;gap:15px;background:#0d1726;padding:12px}
-.nav button{background:none;border:0;color:#a9b6c9;padding:8px}
+.nav{position:fixed;bottom:0;left:0;right:0;background:#0d1726;display:flex;justify-content:center;gap:18px;padding:12px}
+.nav button{background:none;color:white;border:0;padding:10px}
 .nav .active{color:#45d6a2}
-.empty{text-align:center;padding:20px;color:#a9b6c9}
+.notice{background:#302819;padding:13px;border-radius:12px;color:#ffe5ad;font-size:13px;line-height:1.5}
+#message{color:#45d6a2}
 </style>
 </head>
-
 <body>
 <div class="wrap">
-
-<header class="top">
-  <div class="brand">
-    <div class="logo">M</div>
-    <div>
-      <h1>Mihir Task Earning</h1>
-      <small>छोटे काम • सीखें • आगे बढ़ें</small>
-    </div>
-  </div>
-  <span class="pill">DEMO</span>
+<header>
+<h1>🟢 Mihir Task Earning</h1>
+<small>छोटे काम • सीखें • आगे बढ़ें</small>
 </header>
 
-<main>
+<section id="auth">
+<div class="hero">
+<h2>नमस्ते 👋</h2>
+<p>अपना अकाउंट बनाएं और शुरू करें।</p>
+</div>
+<div class="card">
+<h3 id="authTitle">Signup</h3>
+<div id="nameBox">
+<label>नाम</label>
+<input id="name" class="field" placeholder="अपना नाम">
+</div>
+<label>Email</label>
+<input id="email" class="field" type="email" placeholder="Email">
+<label>Password</label>
+<input id="password" class="field" type="password" placeholder="कम से कम 6 अक्षर">
+<button class="btn" id="authButton">Signup करें</button>
+<button class="btn secondary" id="switch">पहले से अकाउंट है? Login</button>
+<p id="message"></p>
+</div>
+</section>
 
+<div id="app" class="hidden">
 <section id="home">
-  <div class="hero">
-    <small>नमस्ते 👋</small>
-    <h2 id="hello">स्वागत है!</h2>
-    <p>आज कुछ नया सीखें और छोटे काम पूरे करें।</p>
-  </div>
-
-  <div class="stats">
-    <div class="stat">
-      <small>Demo Wallet</small>
-      <strong id="balance">₹0</strong>
-    </div>
-    <div class="stat">
-      <small>पूरे किए काम</small>
-      <strong id="count">0</strong>
-    </div>
-  </div>
-
-  <div class="head">
-    <h3>आज के Tasks</h3>
-    <small>डेमो रिवॉर्ड</small>
-  </div>
-
-  <div id="tasks"></div>
-
-  <div class="notice">
-    ⚠️ यह केवल Demo है। दिखने वाला रिवॉर्ड असली पैसा नहीं है।
-    अभी कोई वास्तविक भुगतान या UPI withdrawal नहीं होता।
-    असली सेवा के लिए सुरक्षित backend, सत्यापित काम और भुगतान व्यवस्था बनानी होगी।
-  </div>
+<div class="hero">
+<small>नमस्ते 👋</small>
+<h2 id="welcome">स्वागत है!</h2>
+<p>आज के छोटे Tasks पूरे करें।</p>
+</div>
+<div class="stats">
+<div class="stat"><small>Demo Wallet</small><strong id="balance">₹0</strong></div>
+<div class="stat"><small>पूरे Tasks</small><strong id="count">0</strong></div>
+</div>
+<h3>आज के Tasks</h3>
+<div id="tasks"></div>
+<div id="typingBox" class="card hidden">
+<h3>हिंदी टाइपिंग अभ्यास</h3>
+<p id="sentence">मुझे रोज़ कुछ नया सीखना पसंद है।</p>
+<textarea id="typingInput" class="field" rows="4" placeholder="यहां टाइप करें"></textarea>
+<button class="btn" id="submitTyping">जमा करें</button>
+<button class="btn secondary" id="cancelTyping">बंद करें</button>
+</div>
+<div class="notice">
+यह Demo Wallet है। Rewards वास्तविक पैसे नहीं हैं और इन्हें withdraw नहीं किया जा सकता।
+</div>
 </section>
 
 <section id="wallet" class="hidden">
-  <div class="head"><h3>मेरा Wallet</h3></div>
-
-  <div class="card">
-    <small>Demo Balance</small>
-    <h1 id="walletBalance">₹0</h1>
-    <p class="muted">
-      यह बैलेंस सिर्फ इसी फोन के ब्राउज़र में सेव होता है।
-      इसे withdraw नहीं किया जा सकता।
-    </p>
-  </div>
-
-  <div class="notice">
-    अपना UPI PIN, OTP या बैंक पासवर्ड किसी के साथ साझा न करें।
-  </div>
-
-  <div class="head"><h3>Activity</h3></div>
-  <div class="card" id="history">
-    <div class="empty">अभी कोई activity नहीं है।</div>
-  </div>
+<h2>मेरा Wallet</h2>
+<div class="card">
+<small>Demo Balance</small>
+<h1 id="walletBalance">₹0</h1>
+<p>केवल Demo Rewards</p>
+</div>
+<h3>Activity</h3>
+<div class="card" id="history">अभी कोई Activity नहीं है।</div>
 </section>
 
 <section id="profile" class="hidden">
-  <div class="head"><h3>मेरा Profile</h3></div>
-
-  <div class="card">
-    <label for="name">आपका नाम</label>
-    <input id="name" class="field" maxlength="30"
-    placeholder="अपना नाम लिखें">
-    <button class="btn" id="save">नाम सेव करें</button>
-  </div>
-
-  <div class="notice">
-    यह GitHub Pages पर चलने वाला front-end demo है।
-    इसमें सुरक्षित login या admin panel शामिल नहीं है।
-  </div>
+<h2>मेरा Profile</h2>
+<div class="card">
+<label>नाम</label>
+<input id="profileName" class="field">
+<p id="profileEmail"></p>
+<button class="btn" id="saveProfile">नाम सेव करें</button>
+<button class="btn secondary" id="logout">Logout</button>
+</div>
 </section>
-
-</main>
-
-<p class="empty">Mihir Task Earning • Demo prototype v1.0</p>
+</div>
 </div>
 
-<nav class="nav">
-  <button class="active" data-tab="home">🏠 Home</button>
-  <button data-tab="wallet">👛 Wallet</button>
-  <button data-tab="profile">👤 Profile</button>
+<nav id="nav" class="nav hidden">
+<button class="active" data-tab="home">🏠 Home</button>
+<button data-tab="wallet">👛 Wallet</button>
+<button data-tab="profile">👤 Profile</button>
 </nav>
 
-<script>
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import {
+ getAuth,createUserWithEmailAndPassword,
+ signInWithEmailAndPassword,onAuthStateChanged,signOut
+} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import {
+ getFirestore,doc,getDoc,setDoc,
+ collection,getDocs,serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
-const items = [
-  {
-    id:'typing',
-    icon:'⌨️',
-    title:'हिंदी टाइपिंग अभ्यास',
-    desc:'5 मिनट अभ्यास करें',
-    r:5
-  },
-  {
-    id:'safety',
-    icon:'🔐',
-    title:'ऑनलाइन सुरक्षा टिप',
-    desc:'सुरक्षा की एक टिप पढ़ें',
-    r:3
-  },
-  {
-    id:'quiz',
-    icon:'🧠',
-    title:'सामान्य ज्ञान सवाल',
-    desc:'एक आसान सवाल का जवाब दें',
-    r:4
-  }
+const config={
+ apiKey:"AIzaSyDpMnDSxtxfTxw0fsAICIFZINSNPR66e6I",
+ authDomain:"mihir-task-earning.firebaseapp.com",
+ projectId:"mihir-task-earning",
+ storageBucket:"mihir-task-earning.firebasestorage.app",
+ messagingSenderId:"380488765803",
+ appId:"1:380488765803:web:b8ebe02a8bdc6ac1713c2e",
+ measurementId:"G-X4T75JECBW"
+};
+
+const appFirebase=initializeApp(config);
+const auth=getAuth(appFirebase);
+const db=getFirestore(appFirebase);
+const $=id=>document.getElementById(id);
+
+const tasks=[
+ {id:"typing",title:"हिंदी टाइपिंग अभ्यास",desc:"वाक्य टाइप करें",reward:5,icon:"⌨️"},
+ {id:"safety",title:"ऑनलाइन सुरक्षा टिप",desc:"एक सुरक्षा टिप पढ़ें",reward:3,icon:"🔐"},
+ {id:"quiz",title:"सामान्य ज्ञान सवाल",desc:"एक सवाल का जवाब दें",reward:4,icon:"🧠"}
 ];
 
-const load = (k,d) => {
-  try {
-    return JSON.parse(localStorage.getItem('mte_'+k)) ?? d;
-  } catch {
-    return d;
-  }
+let loginMode=false;
+let currentUser=null;
+let userName="";
+let completed=[];
+let busy=false;
+
+function say(t){$("message").textContent=t;}
+
+$("switch").onclick=()=>{
+ loginMode=!loginMode;
+ $("authTitle").textContent=loginMode?"Login":"Signup";
+ $("authButton").textContent=loginMode?"Login करें":"Signup करें";
+ $("nameBox").classList.toggle("hidden",loginMode);
+ $("switch").textContent=loginMode?"नया अकाउंट बनाएं":"पहले से अकाउंट है? Login";
+ say("");
 };
 
-const save = (k,v) =>
-  localStorage.setItem('mte_'+k,JSON.stringify(v));
-
-let done = load('done',[]);
-let bal = load('bal',0);
-let hist = load('hist',[]);
-let user = load('user','');
-
-function render(){
-
-  document.getElementById('hello').textContent =
-    user ? 'स्वागत है, '+user+'!' : 'स्वागत है!';
-
-  document.getElementById('balance').textContent =
-    document.getElementById('walletBalance').textContent='₹'+bal;
-
-  document.getElementById('count').textContent=done.length;
-
-  document.getElementById('name').value=user;
-
-  document.getElementById('tasks').innerHTML =
-    items.map(t=>`
-      <div class="card task">
-        <div class="ico">${t.icon}</div>
-        <div class="taskbody">
-          <b>${t.title}</b>
-          <small>${t.desc}</small>
-        </div>
-        <div style="text-align:right">
-          <div class="reward">+₹${t.r}</div>
-          <button class="btn"
-            ${done.includes(t.id)?'disabled':''}
-            onclick="finish('${t.id}')">
-            ${done.includes(t.id)?'पूरा हुआ':'शुरू करें'}
-          </button>
-        </div>
-      </div>
-    `).join('');
-
-  document.getElementById('history').innerHTML =
-    hist.length
-    ? hist.map(x=>`<p>${x.t} <b class="reward">+₹${x.r}</b></p>`).join('')
-    : '<div class="empty">अभी कोई activity नहीं है।</div>';
-}
-
-function finish(id){
-
-  let t=items.find(x=>x.id===id);
-
-  if(!t || done.includes(id)) return;
-
-  if(id==='quiz'){
-    let a=prompt('भारत की राजधानी क्या है?');
-
-    if(a===null) return;
-
-    if(!['नई दिल्ली','new delhi'].includes(a.trim().toLowerCase())){
-      alert('जवाब सही नहीं है, फिर कोशिश करें।');
-      return;
-    }
+$("authButton").onclick=async()=>{
+ if(busy)return;
+ const email=$("email").value.trim();
+ const password=$("password").value;
+ const name=$("name").value.trim();
+ if(!email||!password||(!loginMode&&!name)){
+  say("सभी जानकारी भरें।");return;
+ }
+ if(password.length<6){say("Password कम से कम 6 अक्षर का रखें।");return;}
+ busy=true;
+ $("authButton").disabled=true;
+ try{
+  if(loginMode){
+   await signInWithEmailAndPassword(auth,email,password);
+  }else{
+   const result=await createUserWithEmailAndPassword(auth,email,password);
+   await setDoc(doc(db,"users",result.user.uid),{
+    name,email,createdAt:serverTimestamp()
+   });
   }
-
-  if(id==='safety'){
-    alert('OTP, UPI PIN और पासवर्ड किसी के साथ साझा न करें।');
-  }
-
-  if(id==='typing'){
-    alert('बहुत बढ़िया! रोज़ अभ्यास से टाइपिंग बेहतर होती है।');
-  }
-
-  done.push(id);
-  bal+=t.r;
-  hist.unshift({t:t.title,r:t.r});
-
-  save('done',done);
-  save('bal',bal);
-  save('hist',hist);
-
-  render();
-
-  alert('Demo task पूरा हुआ!');
-}
-
-document.getElementById('save').onclick=()=>{
-  user=document.getElementById('name').value.trim();
-  save('user',user);
-  render();
-  alert('नाम सेव हो गया!');
+ }catch(e){
+  say(e.code==="auth/email-already-in-use"?"यह Email पहले से है। Login करें।":e.message);
+ }finally{
+  busy=false;
+  $("authButton").disabled=false;
+ }
 };
 
-document.querySelectorAll('.nav button').forEach(b=>{
-  b.onclick=()=>{
-    document.querySelectorAll('.nav button').forEach(x=>
-      x.classList.toggle('active',x===b)
-    );
-
-    ['home','wallet','profile'].forEach(id=>
-      document.getElementById(id).classList.toggle(
-        'hidden',id!==b.dataset.tab
-      )
-    );
-  };
+onAuthStateChanged(auth,async user=>{
+ currentUser=user;
+ if(!user){
+  $("auth").classList.remove("hidden");
+  $("app").classList.add("hidden");
+  $("nav").classList.add("hidden");
+  return;
+ }
+ $("auth").classList.add("hidden");
+ $("app").classList.remove("hidden");
+ $("nav").classList.remove("hidden");
+ $("profileEmail").textContent=user.email||"";
+ try{await loadData();}
+ catch(e){alert("Firebase error: "+e.message);}
 });
 
-render();
+async function loadData(){
+ const userRef=doc(db,"users",currentUser.uid);
+ const snap=await getDoc(userRef);
+ userName=snap.exists()?snap.data().name||"":"";
+ if(!snap.exists()){
+  await setDoc(userRef,{
+   name:"",
+   email:currentUser.email||"",
+   createdAt:serverTimestamp()
+  });
+ }
+ $("profileName").value=userName;
+ $("welcome").textContent=userName?"स्वागत है, "+userName+"!":"स्वागत है!";
+ const result=await getDocs(collection(db,"users",currentUser.uid,"completions"));
+ completed=result.docs.map(d=>d.id);
+ render();
+}
 
+function render(){
+ let total=0;
+ tasks.forEach(t=>{if(completed.includes(t.id))total+=t.reward;});
+ $("balance").textContent="₹"+total;
+ $("walletBalance").textContent="₹"+total;
+ $("count").textContent=completed.length;
+
+ $("tasks").innerHTML=tasks.map(t=>`
+ <div class="card task">
+  <span style="font-size:25px">${t.icon}</span>
+  <div class="taskbody"><b>${t.title}</b><br><small>${t.desc}</small></div>
+  <div style="text-align:right">
+   <div class="reward">+₹${t.reward}</div>
+   <button class="btn" data-id="${t.id}" ${completed.includes(t.id)?"disabled":""}>
+   ${completed.includes(t.id)?"पूरा हुआ":"शुरू करें"}
+   </button>
+  </div>
+ </div>`).join("");
+
+ $("history").innerHTML=completed.length?
+ tasks.filter(t=>completed.includes(t.id))
+ .map(t=>`<p>${t.title} <b class="reward">+₹${t.reward}</b></p>`).join("")
+ :"अभी कोई Activity नहीं है।";
+
+ document.querySelectorAll("[data-id]").forEach(b=>{
+  b.onclick=()=>startTask(b.dataset.id);
+ });
+}
+
+function startTask(id){
+ if(id==="typing"){
+  $("typingBox").classList.remove("hidden");
+  $("typingInput").value="";
+  $("typingInput").focus();
+ }else if(id==="safety"){
+  alert("OTP, UPI PIN और Password किसी को न दें।");
+  completeTask(id);
+ }else if(id==="quiz"){
+  const a=prompt("भारत की राजधानी क्या है?");
+  if(a===null)return;
+  if(["नई दिल्ली","new delhi"].includes(a.trim().toLowerCase())){
+   completeTask(id);
+  }else alert("गलत जवाब। फिर कोशिश करें।");
+ }
+}
+
+$("submitTyping").onclick=()=>{
+ if($("typingInput").value.trim()!==$("sentence").textContent.trim()){
+  alert("पूरा वाक्य सही टाइप करें।");return;
+ }
+ $("typingBox").classList.add("hidden");
+ completeTask("typing");
+};
+
+$("cancelTyping").onclick=()=>{
+ $("typingBox").classList.add("hidden");
+};
+
+async function completeTask(id){
+ if(!currentUser||completed.includes(id))return;
+ const task=tasks.find(t=>t.id===id);
+ try{
+  await setDoc(doc(db,"users",currentUser.uid,"completions",id),{
+   taskId:id,
+   title:task.title,
+   reward:task.reward,
+   completedAt:serverTimestamp()
+  });
+  completed.push(id);
+  render();
+  alert("Task सेव हो गया! Demo Reward ₹"+task.reward);
+ }catch(e){
+  alert("Save error: "+e.message);
+ }
+}
+
+$("saveProfile").onclick=async()=>{
+ const name=$("profileName").value.trim();
+ if(!name||name.length>30){alert("सही नाम लिखें (30 अक्षर तक)।");return;}
+ try{
+  await setDoc(doc(db,"users",currentUser.uid),{
+   name,email:currentUser.email||"",updatedAt:serverTimestamp()
+  },{merge:true});
+  userName=name;
+  $("welcome").textContent="स्वागत है, "+name+"!";
+  alert("नाम सेव हो गया!");
+ }catch(e){alert(e.message);}
+};
+
+$("logout").onclick=()=>signOut(auth);
+
+document.querySelectorAll(".nav button").forEach(b=>{
+ b.onclick=()=>{
+  document.querySelectorAll(".nav button").forEach(x=>x.classList.toggle("active",x===b));
+  ["home","wallet","profile"].forEach(id=>{
+   $(id).classList.toggle("hidden",id!==b.dataset.tab);
+  });
+ };
+});
 </script>
 </body>
 </html>
