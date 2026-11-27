@@ -14,6 +14,7 @@ h1{font-size:21px}
 small{color:#a9b6c9}
 .field{width:100%;padding:13px;background:#0d1726;border:1px solid #293951;border-radius:10px;color:white;margin:8px 0 13px}
 .btn{padding:11px 15px;border:0;border-radius:10px;background:#45d6a2;color:#062016;font-weight:bold;margin:5px 3px;cursor:pointer}
+.btn:disabled{opacity:.5}
 .secondary{background:#293951;color:white}
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .stat{background:#131e30;border-radius:14px;padding:15px}
@@ -114,13 +115,23 @@ small{color:#a9b6c9}
 
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+
 import {
- getAuth,createUserWithEmailAndPassword,
- signInWithEmailAndPassword,onAuthStateChanged,signOut
+ getAuth,
+ createUserWithEmailAndPassword,
+ signInWithEmailAndPassword,
+ onAuthStateChanged,
+ signOut
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+
 import {
- getFirestore,doc,getDoc,setDoc,
- collection,getDocs,serverTimestamp
+ getFirestore,
+ doc,
+ getDoc,
+ setDoc,
+ collection,
+ getDocs,
+ serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const config={
@@ -133,9 +144,9 @@ const config={
  measurementId:"G-X4T75JECBW"
 };
 
-const appFirebase=initializeApp(config);
-const auth=getAuth(appFirebase);
-const db=getFirestore(appFirebase);
+const firebaseApp=initializeApp(config);
+const auth=getAuth(firebaseApp);
+const db=getFirestore(firebaseApp);
 const $=id=>document.getElementById(id);
 
 const tasks=[
@@ -150,7 +161,9 @@ let userName="";
 let completed=[];
 let busy=false;
 
-function say(t){$("message").textContent=t;}
+function say(message){
+ $("message").textContent=message;
+}
 
 $("switch").onclick=()=>{
  loginMode=!loginMode;
@@ -163,26 +176,45 @@ $("switch").onclick=()=>{
 
 $("authButton").onclick=async()=>{
  if(busy)return;
+
  const email=$("email").value.trim();
  const password=$("password").value;
  const name=$("name").value.trim();
+
  if(!email||!password||(!loginMode&&!name)){
-  say("सभी जानकारी भरें।");return;
+  say("सभी जानकारी भरें।");
+  return;
  }
- if(password.length<6){say("Password कम से कम 6 अक्षर का रखें।");return;}
+
+ if(password.length<6){
+  say("Password कम से कम 6 अक्षर का रखें।");
+  return;
+ }
+
  busy=true;
  $("authButton").disabled=true;
+
  try{
   if(loginMode){
    await signInWithEmailAndPassword(auth,email,password);
   }else{
    const result=await createUserWithEmailAndPassword(auth,email,password);
+
    await setDoc(doc(db,"users",result.user.uid),{
-    name,email,createdAt:serverTimestamp()
+    name:name,
+    email:email,
+    createdAt:serverTimestamp()
    });
   }
  }catch(e){
-  say(e.code==="auth/email-already-in-use"?"यह Email पहले से है। Login करें।":e.message);
+  const errors={
+   "auth/email-already-in-use":"यह Email पहले से है। Login करें।",
+   "auth/invalid-email":"Email सही नहीं है।",
+   "auth/weak-password":"Password मजबूत रखें।",
+   "auth/invalid-credential":"Email या Password गलत है।",
+   "auth/network-request-failed":"Internet connection जांचें।"
+  };
+  say(errors[e.code]||e.message);
  }finally{
   busy=false;
   $("authButton").disabled=false;
@@ -191,24 +223,32 @@ $("authButton").onclick=async()=>{
 
 onAuthStateChanged(auth,async user=>{
  currentUser=user;
+
  if(!user){
   $("auth").classList.remove("hidden");
   $("app").classList.add("hidden");
   $("nav").classList.add("hidden");
   return;
  }
+
  $("auth").classList.add("hidden");
  $("app").classList.remove("hidden");
  $("nav").classList.remove("hidden");
  $("profileEmail").textContent=user.email||"";
- try{await loadData();}
- catch(e){alert("Firebase error: "+e.message);}
+
+ try{
+  await loadData();
+ }catch(e){
+  alert("Firebase error: "+e.message);
+ }
 });
 
 async function loadData(){
  const userRef=doc(db,"users",currentUser.uid);
  const snap=await getDoc(userRef);
+
  userName=snap.exists()?snap.data().name||"":"";
+
  if(!snap.exists()){
   await setDoc(userRef,{
    name:"",
@@ -216,36 +256,49 @@ async function loadData(){
    createdAt:serverTimestamp()
   });
  }
+
  $("profileName").value=userName;
  $("welcome").textContent=userName?"स्वागत है, "+userName+"!":"स्वागत है!";
- const result=await getDocs(collection(db,"users",currentUser.uid,"completions"));
+
+ const result=await getDocs(
+  collection(db,"users",currentUser.uid,"completions")
+ );
+
  completed=result.docs.map(d=>d.id);
  render();
 }
 
 function render(){
  let total=0;
- tasks.forEach(t=>{if(completed.includes(t.id))total+=t.reward;});
+
+ tasks.forEach(t=>{
+  if(completed.includes(t.id))total+=t.reward;
+ });
+
  $("balance").textContent="₹"+total;
  $("walletBalance").textContent="₹"+total;
  $("count").textContent=completed.length;
 
  $("tasks").innerHTML=tasks.map(t=>`
- <div class="card task">
-  <span style="font-size:25px">${t.icon}</span>
-  <div class="taskbody"><b>${t.title}</b><br><small>${t.desc}</small></div>
-  <div style="text-align:right">
-   <div class="reward">+₹${t.reward}</div>
-   <button class="btn" data-id="${t.id}" ${completed.includes(t.id)?"disabled":""}>
-   ${completed.includes(t.id)?"पूरा हुआ":"शुरू करें"}
-   </button>
+  <div class="card task">
+   <span style="font-size:25px">${t.icon}</span>
+   <div class="taskbody">
+    <b>${t.title}</b><br>
+    <small>${t.desc}</small>
+   </div>
+   <div style="text-align:right">
+    <div class="reward">+₹${t.reward}</div>
+    <button class="btn" data-id="${t.id}" ${completed.includes(t.id)?"disabled":""}>
+     ${completed.includes(t.id)?"पूरा हुआ":"शुरू करें"}
+    </button>
+   </div>
   </div>
- </div>`).join("");
+ `).join("");
 
  $("history").innerHTML=completed.length?
- tasks.filter(t=>completed.includes(t.id))
- .map(t=>`<p>${t.title} <b class="reward">+₹${t.reward}</b></p>`).join("")
- :"अभी कोई Activity नहीं है।";
+  tasks.filter(t=>completed.includes(t.id))
+   .map(t=>`<p>${t.title} <b class="reward">+₹${t.reward}</b></p>`).join("")
+  :"अभी कोई Activity नहीं है।";
 
  document.querySelectorAll("[data-id]").forEach(b=>{
   b.onclick=()=>startTask(b.dataset.id);
@@ -261,18 +314,23 @@ function startTask(id){
   alert("OTP, UPI PIN और Password किसी को न दें।");
   completeTask(id);
  }else if(id==="quiz"){
-  const a=prompt("भारत की राजधानी क्या है?");
-  if(a===null)return;
-  if(["नई दिल्ली","new delhi"].includes(a.trim().toLowerCase())){
+  const answer=prompt("भारत की राजधानी क्या है?");
+  if(answer===null)return;
+
+  if(["नई दिल्ली","new delhi"].includes(answer.trim().toLowerCase())){
    completeTask(id);
-  }else alert("गलत जवाब। फिर कोशिश करें।");
+  }else{
+   alert("गलत जवाब। फिर कोशिश करें।");
+  }
  }
 }
 
 $("submitTyping").onclick=()=>{
  if($("typingInput").value.trim()!==$("sentence").textContent.trim()){
-  alert("पूरा वाक्य सही टाइप करें।");return;
+  alert("पूरा वाक्य सही टाइप करें।");
+  return;
  }
+
  $("typingBox").classList.add("hidden");
  completeTask("typing");
 };
@@ -283,7 +341,10 @@ $("cancelTyping").onclick=()=>{
 
 async function completeTask(id){
  if(!currentUser||completed.includes(id))return;
+
  const task=tasks.find(t=>t.id===id);
+ if(!task)return;
+
  try{
   await setDoc(doc(db,"users",currentUser.uid,"completions",id),{
    taskId:id,
@@ -291,6 +352,7 @@ async function completeTask(id){
    reward:task.reward,
    completedAt:serverTimestamp()
   });
+
   completed.push(id);
   render();
   alert("Task सेव हो गया! Demo Reward ₹"+task.reward);
@@ -301,22 +363,41 @@ async function completeTask(id){
 
 $("saveProfile").onclick=async()=>{
  const name=$("profileName").value.trim();
- if(!name||name.length>30){alert("सही नाम लिखें (30 अक्षर तक)।");return;}
+
+ if(!name||name.length>30){
+  alert("सही नाम लिखें (30 अक्षर तक)।");
+  return;
+ }
+
  try{
   await setDoc(doc(db,"users",currentUser.uid),{
-   name,email:currentUser.email||"",updatedAt:serverTimestamp()
+   name:name,
+   email:currentUser.email||"",
+   updatedAt:serverTimestamp()
   },{merge:true});
+
   userName=name;
   $("welcome").textContent="स्वागत है, "+name+"!";
   alert("नाम सेव हो गया!");
- }catch(e){alert(e.message);}
+ }catch(e){
+  alert(e.message);
+ }
 };
 
-$("logout").onclick=()=>signOut(auth);
+$("logout").onclick=async()=>{
+ try{
+  await signOut(auth);
+ }catch(e){
+  alert(e.message);
+ }
+};
 
 document.querySelectorAll(".nav button").forEach(b=>{
  b.onclick=()=>{
-  document.querySelectorAll(".nav button").forEach(x=>x.classList.toggle("active",x===b));
+  document.querySelectorAll(".nav button").forEach(x=>{
+   x.classList.toggle("active",x===b);
+  });
+
   ["home","wallet","profile"].forEach(id=>{
    $(id).classList.toggle("hidden",id!==b.dataset.tab);
   });
