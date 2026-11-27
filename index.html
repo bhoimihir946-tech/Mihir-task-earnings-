@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="hi">
 <head>
@@ -7,34 +8,32 @@
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#0b1220;color:white;font-family:Arial,sans-serif}
-.wrap{max-width:700px;margin:auto;padding:18px 15px 100px}
+.wrap{max-width:720px;margin:auto;padding:18px 15px 100px}
 .card{background:#131e30;border:1px solid #293951;border-radius:16px;padding:16px;margin:12px 0}
 .hero{background:linear-gradient(120deg,#1b654f,#164b69);padding:20px;border-radius:18px}
-h1{font-size:21px}
+h1{font-size:22px}
 small{color:#a9b6c9}
 .field{width:100%;padding:13px;background:#0d1726;border:1px solid #293951;border-radius:10px;color:white;margin:8px 0 13px}
 .btn{padding:11px 15px;border:0;border-radius:10px;background:#45d6a2;color:#062016;font-weight:bold;margin:5px 3px;cursor:pointer}
-.btn:disabled{opacity:.5}
 .secondary{background:#293951;color:white}
 .danger{background:#a83c4b;color:white}
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .stat{background:#131e30;border-radius:14px;padding:15px}
 .stat strong{display:block;font-size:23px;margin-top:7px}
-.task{display:flex;align-items:center;gap:12px}
-.taskbody{flex:1}
-.reward{color:#45d6a2;font-weight:bold}
 .hidden{display:none!important}
 .nav{position:fixed;bottom:0;left:0;right:0;background:#0d1726;display:flex;justify-content:center;gap:8px;padding:10px;flex-wrap:wrap}
 .nav button{background:none;color:white;border:0;padding:10px;cursor:pointer}
 .nav .active{color:#45d6a2}
 .notice{background:#302819;padding:13px;border-radius:12px;color:#ffe5ad;font-size:13px;line-height:1.5}
-#message{color:#45d6a2}
+.reward{color:#45d6a2;font-weight:bold}
 .user-card{background:#131e30;border:1px solid #293951;padding:13px;border-radius:12px;margin:10px 0;overflow-wrap:anywhere}
 .status{font-weight:bold;color:#ffd27a}
+#message{color:#45d6a2}
 </style>
 </head>
 <body>
 <div class="wrap">
+
 <header>
 <h1>🟢 Mihir Task Earning</h1>
 <small>छोटे काम • सीखें • आगे बढ़ें</small>
@@ -62,59 +61,56 @@ small{color:#a9b6c9}
 </section>
 
 <div id="app" class="hidden">
+
 <section id="home">
 <div class="hero">
 <small>नमस्ते 👋</small>
 <h2 id="welcome">स्वागत है!</h2>
 <p>आज के छोटे Tasks पूरे करें।</p>
 </div>
+
 <div class="stats">
-<div class="stat"><small>Demo Wallet</small><strong id="balance">₹0</strong></div>
-<div class="stat"><small>पूरे Tasks</small><strong id="count">0</strong></div>
+<div class="stat">
+<small>Demo Wallet</small>
+<strong id="balance">₹0</strong>
 </div>
+<div class="stat">
+<small>Approved Tasks</small>
+<strong id="count">0</strong>
+</div>
+</div>
+
 <h3>आज के Tasks</h3>
 <div id="tasks"></div>
-<div id="typingBox" class="card hidden">
-<h3>हिंदी टाइपिंग अभ्यास</h3>
-<p id="sentence">मुझे रोज़ कुछ नया सीखना पसंद है।</p>
-<textarea id="typingInput" class="field" rows="4" placeholder="यहां टाइप करें"></textarea>
-<button class="btn" id="submitTyping">जमा करें</button>
-<button class="btn secondary" id="cancelTyping">बंद करें</button>
+
+<div class="card hidden" id="proofBox">
+<h3 id="proofTitle">Task Proof</h3>
+<p id="proofDescription"></p>
+<label>अपना Proof लिखें</label>
+<textarea id="proofInput" class="field" rows="4" placeholder="यहां अपना जवाब या Proof लिखें"></textarea>
+<button class="btn" id="submitProof">Proof Submit करें</button>
+<button class="btn secondary" id="cancelProof">Cancel</button>
+<p id="proofMessage"></p>
 </div>
+
 <div class="notice">
-यह Demo Wallet है। Demo Rewards वास्तविक पैसे नहीं हैं और इन्हें withdraw नहीं किया जा सकता।
+यह Demo Wallet है। Rewards वास्तविक पैसे नहीं हैं। Admin की मंजूरी के बाद ही Demo Reward जुड़ेगा।
 </div>
 </section>
 
 <section id="wallet" class="hidden">
-<h2>मेरा Wallet</h2>
+<h2>👛 मेरा Wallet</h2>
 <div class="card">
 <small>Demo Balance</small>
 <h1 id="walletBalance">₹0</h1>
-<p>केवल Demo Rewards</p>
+<p>केवल Approved Demo Rewards</p>
 </div>
-
-<div class="card">
-<h3>💸 Withdrawal Request</h3>
-<p>Minimum Withdrawal: <b>₹50</b></p>
-<small>वास्तविक भुगतान के लिए सत्यापित बैलेंस</small>
-<h2 id="realBalance">₹0</h2>
-<label>Withdrawal Amount (₹)</label>
-<input id="withdrawAmount" class="field" type="number" min="50" placeholder="कम से कम 50">
-<label>UPI ID</label>
-<input id="withdrawUPI" class="field" placeholder="example@upi">
-<button class="btn" id="withdrawBtn">Request Withdrawal</button>
-<p id="withdrawMessage"></p>
-</div>
-
-<h3>Withdrawal History</h3>
-<div class="card" id="withdrawHistory">अभी कोई Request नहीं है।</div>
-<h3>Activity</h3>
+<h3>Reward History</h3>
 <div class="card" id="history">अभी कोई Activity नहीं है।</div>
 </section>
 
 <section id="profile" class="hidden">
-<h2>मेरा Profile</h2>
+<h2>👤 मेरा Profile</h2>
 <div class="card">
 <label>नाम</label>
 <input id="profileName" class="field">
@@ -129,22 +125,30 @@ small{color:#a9b6c9}
 <h2>🛡️ Admin Panel</h2>
 <p>Welcome, Mihir Admin</p>
 </div>
+
 <div class="stats">
-<div class="stat"><small>Total Users</small><strong id="totalUsers">0</strong></div>
-<div class="stat"><small>Completed Tasks</small><strong id="totalCompletions">0</strong></div>
+<div class="stat">
+<small>Total Users</small>
+<strong id="totalUsers">0</strong>
 </div>
+<div class="stat">
+<small>Approved Tasks</small>
+<strong id="totalCompletions">0</strong>
+</div>
+</div>
+
 <div class="card">
 <h3>Registered Users</h3>
 <button class="btn" id="refreshAdmin">Refresh Users</button>
-<p id="adminMessage">Users की जानकारी लोड करने के लिए Refresh दबाएं।</p>
+<p id="adminMessage"></p>
 <div id="userList"></div>
 </div>
 
 <div class="card">
-<h3>💸 Withdrawal Management</h3>
-<button class="btn" id="refreshWithdrawals">Refresh Requests</button>
-<p id="withdrawAdminMessage"></p>
-<div id="withdrawalRequests">Requests यहां दिखाई देंगी।</div>
+<h3>📋 Task Proof Management</h3>
+<button class="btn" id="refreshProofs">Refresh Proofs</button>
+<p id="proofAdminMessage"></p>
+<div id="proofList"></div>
 </div>
 
 <div class="notice">
@@ -162,399 +166,462 @@ Admin Panel केवल निर्धारित Admin Email से Login �
 </nav>
 
 <script type="module">
-import {initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+
+import {initializeApp}
+from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 
 import {
- getAuth,createUserWithEmailAndPassword,
- signInWithEmailAndPassword,onAuthStateChanged,signOut
+getAuth,createUserWithEmailAndPassword,
+signInWithEmailAndPassword,onAuthStateChanged,signOut
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 
 import {
- getFirestore,doc,getDoc,setDoc,collection,
- getDocs,addDoc,serverTimestamp,where,
- runTransaction
+getFirestore,doc,getDoc,setDoc,collection,
+getDocs,serverTimestamp,query,where,updateDoc
 } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const config={
- apiKey:"AIzaSyDpMnDSxtxfTxw0fsAICIFZINSNPR66e6I",
- authDomain:"mihir-task-earning.firebaseapp.com",
- projectId:"mihir-task-earning",
- storageBucket:"mihir-task-earning.firebasestorage.app",
- messagingSenderId:"380488765803",
- appId:"1:380488765803:web:b8ebe02a8bdc6ac1713c2e",
- measurementId:"G-X4T75JECBW"
+apiKey:"AIzaSyDpMnDSxtxfTxw0fsAICIFZINSNPR66e6I",
+authDomain:"mihir-task-earning.firebaseapp.com",
+projectId:"mihir-task-earning",
+storageBucket:"mihir-task-earning.firebasestorage.app",
+messagingSenderId:"380488765803",
+appId:"1:380488765803:web:b8ebe02a8bdc6ac1713c2e",
+measurementId:"G-X4T75JECBW"
 };
 
 const ADMIN_EMAIL="bhoimihir946@gmail.com";
-const appFirebase=initializeApp(config);
-const auth=getAuth(appFirebase);
-const db=getFirestore(appFirebase);
+
+const firebase=initializeApp(config);
+const auth=getAuth(firebase);
+const db=getFirestore(firebase);
+
 const $=id=>document.getElementById(id);
 
 const tasks=[
- {id:"typing",title:"हिंदी टाइपिंग अभ्यास",desc:"वाक्य टाइप करें",reward:5,icon:"⌨️"},
- {id:"safety",title:"ऑनलाइन सुरक्षा टिप",desc:"एक सुरक्षा टिप पढ़ें",reward:3,icon:"🔐"},
- {id:"quiz",title:"सामान्य ज्ञान सवाल",desc:"एक सवाल का जवाब दें",reward:4,icon:"🧠"}
+{id:"typing",title:"हिंदी टाइपिंग अभ्यास",desc:"दिया गया वाक्य सही टाइप करें।",reward:5},
+{id:"safety",title:"ऑनलाइन सुरक्षा टिप",desc:"एक सुरक्षा टिप लिखें।",reward:3},
+{id:"quiz",title:"सामान्य ज्ञान सवाल",desc:"भारत की राजधानी बताएं।",reward:4}
 ];
 
-let loginMode=false;
 let currentUser=null;
 let userName="";
-let completed=[];
-let withdrawableBalance=0;
+let submissions=[];
+let activeTask=null;
+let loginMode=false;
 let busy=false;
 
-function say(msg){$("message").textContent=msg}
 function isAdmin(){
- return currentUser && (currentUser.email||"").toLowerCase()===ADMIN_EMAIL;
+return currentUser &&
+(currentUser.email||"").toLowerCase()===ADMIN_EMAIL;
 }
+
 function escapeHTML(value){
- return String(value??"").replace(/[&<>"']/g,c=>({
- "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
- })[c]);
+return String(value??"").replace(/[&<>"']/g,c=>({
+"&":"&amp;","<":"&lt;",">":"&gt;",
+'"':"&quot;","'":"&#039;"
+})[c]);
+}
+
+function say(message){
+$("message").textContent=message;
 }
 
 $("switch").onclick=()=>{
- loginMode=!loginMode;
- $("authTitle").textContent=loginMode?"Login":"Signup";
- $("authButton").textContent=loginMode?"Login करें":"Signup करें";
- $("nameBox").classList.toggle("hidden",loginMode);
- $("switch").textContent=loginMode?"नया अकाउंट बनाएं":"पहले से अकाउंट है? Login";
- say("");
+loginMode=!loginMode;
+$("authTitle").textContent=loginMode?"Login":"Signup";
+$("authButton").textContent=loginMode?"Login करें":"Signup करें";
+$("nameBox").classList.toggle("hidden",loginMode);
+$("switch").textContent=loginMode?
+"नया अकाउंट बनाएं":"पहले से अकाउंट है? Login";
+say("");
 };
 
 $("authButton").onclick=async()=>{
- if(busy)return;
- const email=$("email").value.trim();
- const password=$("password").value;
- const name=$("name").value.trim();
- if(!email||!password||(!loginMode&&!name)){
-  say("सभी जानकारी भरें।");return;
- }
- if(password.length<6){say("Password कम से कम 6 अक्षर का रखें।");return}
- busy=true;
- $("authButton").disabled=true;
- try{
-  if(loginMode){
-   await signInWithEmailAndPassword(auth,email,password);
-  }else{
-   const result=await createUserWithEmailAndPassword(auth,email,password);
-   await setDoc(doc(db,"users",result.user.uid),{
-    name,email,withdrawableBalance:0,createdAt:serverTimestamp()
-   });
-  }
- }catch(e){
-  const errors={
-   "auth/email-already-in-use":"यह Email पहले से है। Login करें।",
-   "auth/invalid-email":"Email सही नहीं है।",
-   "auth/weak-password":"Password मजबूत रखें।",
-   "auth/invalid-credential":"Email या Password गलत है।",
-   "auth/network-request-failed":"Internet connection जांचें।"
-  };
-  say(errors[e.code]||e.message);
- }finally{
-  busy=false;
-  $("authButton").disabled=false;
- }
+if(busy)return;
+
+const email=$("email").value.trim();
+const password=$("password").value;
+const name=$("name").value.trim();
+
+if(!email||!password||(!loginMode&&!name)){
+say("सभी जानकारी भरें।");
+return;
+}
+
+if(password.length<6){
+say("Password कम से कम 6 अक्षर का रखें।");
+return;
+}
+
+busy=true;
+$("authButton").disabled=true;
+
+try{
+if(loginMode){
+await signInWithEmailAndPassword(auth,email,password);
+}else{
+const result=await createUserWithEmailAndPassword(auth,email,password);
+await setDoc(doc(db,"users",result.user.uid),{
+name,
+email,
+withdrawableBalance:0,
+createdAt:serverTimestamp()
+});
+}
+}catch(e){
+const errors={
+"auth/email-already-in-use":"यह Email पहले से मौजूद है। Login करें।",
+"auth/invalid-email":"Email सही नहीं है।",
+"auth/weak-password":"Password मजबूत रखें।",
+"auth/invalid-credential":"Email या Password गलत है。",
+"auth/network-request-failed":"Internet Connection जांचें।"
+};
+say(errors[e.code]||e.message);
+}finally{
+busy=false;
+$("authButton").disabled=false;
+}
 };
 
 onAuthStateChanged(auth,async user=>{
- currentUser=user;
- if(!user){
-  $("auth").classList.remove("hidden");
-  $("app").classList.add("hidden");
-  $("nav").classList.add("hidden");
-  $("adminNav").classList.add("hidden");
-  return;
- }
- $("auth").classList.add("hidden");
- $("app").classList.remove("hidden");
- $("nav").classList.remove("hidden");
- $("profileEmail").textContent=user.email||"";
- $("adminNav").classList.toggle("hidden",!isAdmin());
- try{await loadData()}
- catch(e){alert("Firebase error: "+e.message)}
+currentUser=user;
+
+if(!user){
+$("auth").classList.remove("hidden");
+$("app").classList.add("hidden");
+$("nav").classList.add("hidden");
+$("adminNav").classList.add("hidden");
+return;
+}
+
+$("auth").classList.add("hidden");
+$("app").classList.remove("hidden");
+$("nav").classList.remove("hidden");
+$("profileEmail").textContent=user.email||"";
+$("adminNav").classList.toggle("hidden",!isAdmin());
+
+try{
+await loadData();
+}catch(e){
+alert("Firebase Error: "+e.message);
+}
 });
 
 async function loadData(){
- const ref=doc(db,"users",currentUser.uid);
- const snap=await getDoc(ref);
- const data=snap.exists()?snap.data():{};
- userName=data.name||"";
- withdrawableBalance=Number(data.withdrawableBalance||0);
- if(!snap.exists()){
-  await setDoc(ref,{
-   name:"",email:currentUser.email||"",
-   withdrawableBalance:0,createdAt:serverTimestamp()
-  });
- }
- $("profileName").value=userName;
- $("welcome").textContent=userName?"स्वागत है, "+userName+"!":"स्वागत है!";
- $("realBalance").textContent="₹"+withdrawableBalance;
- const result=await getDocs(collection(db,"users",currentUser.uid,"completions"));
- completed=result.docs.map(d=>d.id);
- render();
- await loadWithdrawalHistory();
+const ref=doc(db,"users",currentUser.uid);
+const snap=await getDoc(ref);
+
+if(!snap.exists()){
+await setDoc(ref,{
+name:"",
+email:currentUser.email||"",
+withdrawableBalance:0,
+createdAt:serverTimestamp()
+});
+userName="";
+}else{
+userName=snap.data().name||"";
+}
+
+$("profileName").value=userName;
+$("welcome").textContent=userName?
+"स्वागत है, "+userName+"!":"स्वागत है!";
+
+await loadSubmissions();
+}
+
+async function loadSubmissions(){
+const q=query(
+collection(db,"taskSubmissions"),
+where("uid","==",currentUser.uid)
+);
+
+const snap=await getDocs(q);
+submissions=snap.docs.map(d=>({
+id:d.id,...d.data()
+}));
+
+render();
 }
 
 function render(){
- let total=0;
- tasks.forEach(t=>{if(completed.includes(t.id))total+=t.reward});
- $("balance").textContent="₹"+total;
- $("walletBalance").textContent="₹"+total;
- $("count").textContent=completed.length;
+const approved=submissions.filter(s=>s.status==="approved");
+const total=approved.reduce((sum,s)=>sum+Number(s.reward||0),0);
 
- $("tasks").innerHTML=tasks.map(t=>`
- <div class="card task">
-  <span style="font-size:25px">${t.icon}</span>
-  <div class="taskbody"><b>${t.title}</b><br><small>${t.desc}</small></div>
-  <div style="text-align:right">
-   <div class="reward">+₹${t.reward}</div>
-   <button class="btn" data-id="${t.id}" ${completed.includes(t.id)?"disabled":""}>
-   ${completed.includes(t.id)?"पूरा हुआ":"शुरू करें"}
-   </button>
-  </div>
- </div>`).join("");
+$("balance").textContent="₹"+total;
+$("walletBalance").textContent="₹"+total;
+$("count").textContent=approved.length;
 
- $("history").innerHTML=completed.length?
- tasks.filter(t=>completed.includes(t.id))
- .map(t=>`<p>${t.title} <b class="reward">+₹${t.reward}</b></p>`).join("")
- :"अभी कोई Activity नहीं है।";
+$("tasks").innerHTML=tasks.map(t=>{
+const existing=submissions.find(s=>s.taskId===t.id);
+let button="शुरू करें";
+let disabled="";
 
- document.querySelectorAll("[data-id]").forEach(b=>{
-  b.onclick=()=>startTask(b.dataset.id);
- });
+if(existing){
+button=existing.status==="approved"?
+"पूरा हुआ":existing.status==="rejected"?
+"Reject हुआ":"जांच में है";
+disabled="disabled";
+}
+
+return `
+<div class="card">
+<b>${escapeHTML(t.title)}</b>
+<p><small>${escapeHTML(t.desc)}</small></p>
+<span class="reward">Demo Reward +₹${t.reward}</span>
+<br>
+<button class="btn" data-task="${t.id}" ${disabled}>
+${button}
+</button>
+</div>`;
+}).join("");
+
+document.querySelectorAll("[data-task]").forEach(b=>{
+b.onclick=()=>startTask(b.dataset.task);
+});
+
+$("history").innerHTML=approved.length?
+approved.map(s=>`
+<div class="user-card">
+<b>${escapeHTML(s.title)}</b>
+<p class="reward">+₹${Number(s.reward)}</p>
+<small>Approved Demo Reward</small>
+</div>
+`).join(""):"अभी कोई Approved Activity नहीं है।";
 }
 
 function startTask(id){
- if(id==="typing"){
-  $("typingBox").classList.remove("hidden");
-  $("typingInput").value="";
-  $("typingInput").focus();
- }else if(id==="safety"){
-  alert("OTP, UPI PIN और Password किसी को न दें।");
-  completeTask(id);
- }else if(id==="quiz"){
-  const answer=prompt("भारत की राजधानी क्या है?");
-  if(answer===null)return;
-  if(["नई दिल्ली","new delhi"].includes(answer.trim().toLowerCase())){
-   completeTask(id);
-  }else alert("गलत जवाब। फिर कोशिश करें।");
- }
+const task=tasks.find(t=>t.id===id);
+if(!task)return;
+
+activeTask=task;
+$("proofTitle").textContent=task.title;
+$("proofDescription").textContent=task.desc;
+
+$("proofInput").value="";
+$("proofMessage").textContent="";
+$("proofBox").classList.remove("hidden");
+$("proofInput").focus();
+
+if(id==="typing"){
+$("proofInput").placeholder=
+"मुझे रोज़ कुछ नया सीखना पसंद है।";
+}else if(id==="quiz"){
+$("proofInput").placeholder=
+"भारत की राजधानी क्या है?";
+}else{
+$("proofInput").placeholder=
+"ऑनलाइन सुरक्षा की एक टिप लिखें।";
+}
 }
 
-$("submitTyping").onclick=()=>{
- if($("typingInput").value.trim()!==$("sentence").textContent.trim()){
-  alert("पूरा वाक्य सही टाइप करें।");return;
- }
- $("typingBox").classList.add("hidden");
- completeTask("typing");
-};
-$("cancelTyping").onclick=()=>$("typingBox").classList.add("hidden");
-
-async function completeTask(id){
- if(!currentUser||completed.includes(id))return;
- const task=tasks.find(t=>t.id===id);
- if(!task)return;
- try{
-  await setDoc(doc(db,"users",currentUser.uid,"completions",id),{
-   taskId:id,title:task.title,reward:task.reward,
-   completedAt:serverTimestamp()
-  });
-  completed.push(id);
-  render();
-  alert("Demo Task सेव हो गया! Demo Reward ₹"+task.reward);
- }catch(e){alert("Save error: "+e.message)}
-}
-
-// User withdrawal request
-$("withdrawBtn").onclick=async()=>{
- const amount=Number($("withdrawAmount").value);
- const upi=$("withdrawUPI").value.trim();
- $("withdrawMessage").textContent="";
- if(!Number.isFinite(amount)||amount<50){
-  $("withdrawMessage").textContent="Minimum Withdrawal ₹50 है।";return;
- }
- if(!/^[\w.-]{2,256}@[a-zA-Z]{2,64}$/.test(upi)){
-  $("withdrawMessage").textContent="सही UPI ID डालें।";return;
- }
- if(amount>withdrawableBalance){
-  $("withdrawMessage").textContent="आपका सत्यापित Withdrawal Balance पर्याप्त नहीं है।";return;
- }
- $("withdrawBtn").disabled=true;
- try{
-  await addDoc(collection(db,"withdrawalRequests"),{
-   uid:currentUser.uid,
-   email:currentUser.email||"",
-   amount,
-   upi,
-   status:"pending",
-   createdAt:serverTimestamp()
-  });
-  $("withdrawAmount").value="";
-  $("withdrawUPI").value="";
-  $("withdrawMessage").textContent="Request भेज दी गई है। Admin जांच करेगा।";
-  await loadWithdrawalHistory();
- }catch(e){
-  $("withdrawMessage").textContent="Request Error: "+e.message;
- }finally{$("withdrawBtn").disabled=false}
+$("cancelProof").onclick=()=>{
+$("proofBox").classList.add("hidden");
+activeTask=null;
 };
 
-async function loadWithdrawalHistory(){
- const q=await getDocs(query(
-  collection(db,"withdrawalRequests"),
-  where("uid","==",currentUser.uid)
- ));
- const rows=q.docs.map(d=>({id:d.id,...d.data()}));
- rows.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
- $("withdrawHistory").innerHTML=rows.length?rows.map(r=>`
- <div class="user-card">
-  <b>₹${Number(r.amount)}</b>
-  <p>UPI: ${escapeHTML(r.upi)}</p>
-  <p class="status">Status: ${escapeHTML(r.status)}</p>
-  ${r.utr?`<p>UTR: ${escapeHTML(r.utr)}</p>`:""}
- </div>`).join(""):"अभी कोई Request नहीं है।";
+$("submitProof").onclick=async()=>{
+if(!activeTask||!currentUser)return;
+
+const proof=$("proofInput").value.trim();
+
+if(proof.length<3){
+$("proofMessage").textContent="अपना Proof लिखें।";
+return;
 }
 
-// Save profile
+const existing=submissions.find(s=>s.taskId===activeTask.id);
+
+if(existing){
+$("proofMessage").textContent="इस Task का Proof पहले ही जमा है।";
+return;
+}
+
+$("submitProof").disabled=true;
+
+try{
+const task=activeTask;
+const submissionId=currentUser.uid+"_"+task.id;
+
+await setDoc(doc(db,"taskSubmissions",submissionId),{
+uid:currentUser.uid,
+email:currentUser.email||"",
+taskId:task.id,
+title:task.title,
+reward:task.reward,
+proof:proof,
+status:"pending",
+createdAt:serverTimestamp()
+});
+
+$("proofMessage").textContent="Proof सफलतापूर्वक जमा हो गया!";
+$("proofBox").classList.add("hidden");
+activeTask=null;
+
+await loadSubmissions();
+
+}catch(e){
+$("proofMessage").textContent="Error: "+e.message;
+}finally{
+$("submitProof").disabled=false;
+}
+};
+
 $("saveProfile").onclick=async()=>{
- const name=$("profileName").value.trim();
- if(!name||name.length>30){alert("सही नाम लिखें (30 अक्षर तक)।");return}
- try{
-  await setDoc(doc(db,"users",currentUser.uid),{
-   name,updatedAt:serverTimestamp()
-  },{merge:true});
-  userName=name;
-  $("welcome").textContent="स्वागत है, "+name+"!";
-  alert("नाम सेव हो गया!");
- }catch(e){alert(e.message)}
+const name=$("profileName").value.trim();
+
+if(!name||name.length>30){
+alert("सही नाम लिखें।");
+return;
+}
+
+try{
+await updateDoc(doc(db,"users",currentUser.uid),{
+name,
+updatedAt:serverTimestamp()
+});
+
+userName=name;
+$("welcome").textContent="स्वागत है, "+name+"!";
+alert("नाम सेव हो गया!");
+}catch(e){
+alert("Error: "+e.message);
+}
 };
 
-// Admin users
+$("logout").onclick=async()=>{
+await signOut(auth);
+};
+
 async function loadAdmin(){
- if(!isAdmin()){alert("Admin access नहीं है।");return}
- $("adminMessage").textContent="Users लोड हो रहे हैं...";
- $("userList").innerHTML="";
- try{
-  const snapshot=await getDocs(collection(db,"users"));
-  let total=0;
-  const users=[];
-  for(const u of snapshot.docs){
-   const cs=await getDocs(collection(db,"users",u.id,"completions"));
-   total+=cs.size;
-   const d=u.data();
-   users.push({name:d.name||"नाम नहीं दिया",email:d.email||"Email उपलब्ध नहीं",tasks:cs.size});
-  }
-  $("totalUsers").textContent=users.length;
-  $("totalCompletions").textContent=total;
-  $("userList").innerHTML=users.map((u,i)=>`
-   <div class="user-card">
-    <b>${i+1}. ${escapeHTML(u.name)}</b>
-    <p>${escapeHTML(u.email)}</p>
-    <small>Completed Tasks: ${u.tasks}</small>
-   </div>`).join("")||"अभी कोई User नहीं है।";
-  $("adminMessage").textContent="User list अपडेट हो गई।";
- }catch(e){$("adminMessage").textContent="Error: "+e.message}
+if(!isAdmin())return;
+
+$("adminMessage").textContent="Users लोड हो रहे हैं...";
+
+try{
+const snap=await getDocs(collection(db,"users"));
+const users=snap.docs.map(d=>d.data());
+
+const all=await getDocs(collection(db,"taskSubmissions"));
+const rows=all.docs.map(d=>d.data());
+
+$("totalUsers").textContent=users.length;
+$("totalCompletions").textContent=
+rows.filter(s=>s.status==="approved").length;
+
+$("userList").innerHTML=users.map((u,i)=>`
+<div class="user-card">
+<b>${i+1}. ${escapeHTML(u.name||"नाम नहीं दिया")}</b>
+<p>${escapeHTML(u.email||"Email उपलब्ध नहीं")}</p>
+</div>
+`).join("")||"कोई User नहीं है।";
+
+$("adminMessage").textContent="User List अपडेट हो गई।";
+
+}catch(e){
+$("adminMessage").textContent="Error: "+e.message;
+}
 }
 
-// Admin withdrawal management
-async function loadWithdrawals(){
- if(!isAdmin()){alert("Admin access नहीं है।");return}
- $("withdrawAdminMessage").textContent="Requests लोड हो रही हैं...";
- try{
-  const snap=await getDocs(collection(db,"withdrawalRequests"));
-  const rows=snap.docs.map(d=>({id:d.id,...d.data()}));
-  rows.sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
-  $("withdrawalRequests").innerHTML=rows.length?rows.map(r=>`
-   <div class="user-card">
-    <b>₹${Number(r.amount)}</b>
-    <p>Email: ${escapeHTML(r.email)}</p>
-    <p>UPI: ${escapeHTML(r.upi)}</p>
-    <p>Status: <span class="status">${escapeHTML(r.status)}</span></p>
-    ${r.utr?`<p>UTR: ${escapeHTML(r.utr)}</p>`:""}
-    ${r.status==="pending"?`
-     <input class="field" id="utr-${r.id}" placeholder="Payment के बाद UTR Number">
-     <button class="btn" data-paid="${r.id}">Paid करें</button>
-     <button class="btn danger" data-reject="${r.id}">Reject करें</button>
-    `:""}
-   </div>`).join(""):"कोई Withdrawal Request नहीं है।";
+async function loadProofs(){
+if(!isAdmin())return;
 
-  document.querySelectorAll("[data-paid]").forEach(b=>{
-   b.onclick=()=>markPaid(b.dataset.paid);
-  });
-  document.querySelectorAll("[data-reject]").forEach(b=>{
-   b.onclick=()=>rejectRequest(b.dataset.reject);
-  });
-  $("withdrawAdminMessage").textContent="Requests अपडेट हो गईं।";
- }catch(e){
-  $("withdrawAdminMessage").textContent="Error: "+e.message;
- }
+$("proofAdminMessage").textContent="Proof लोड हो रहे हैं...";
+
+try{
+const snap=await getDocs(collection(db,"taskSubmissions"));
+const rows=snap.docs.map(d=>({
+id:d.id,...d.data()
+}));
+
+rows.sort((a,b)=>
+(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)
+);
+
+$("proofList").innerHTML=rows.length?
+rows.map(r=>`
+<div class="user-card">
+<b>${escapeHTML(r.title)}</b>
+<p>Email: ${escapeHTML(r.email)}</p>
+<p>Proof: ${escapeHTML(r.proof)}</p>
+<p>Reward: ₹${Number(r.reward)}</p>
+<p class="status">Status: ${escapeHTML(r.status)}</p>
+${r.status==="pending"?`
+<button class="btn" data-approve="${r.id}">Approve</button>
+<button class="btn danger" data-reject="${r.id}">Reject</button>
+`:""}
+</div>
+`).join(""):"अभी कोई Proof नहीं है।";
+
+document.querySelectorAll("[data-approve]").forEach(b=>{
+b.onclick=()=>reviewProof(b.dataset.approve,"approved");
+});
+
+document.querySelectorAll("[data-reject]").forEach(b=>{
+b.onclick=()=>reviewProof(b.dataset.reject,"rejected");
+});
+
+$("proofAdminMessage").textContent="Proof List अपडेट हो गई।";
+
+}catch(e){
+$("proofAdminMessage").textContent="Error: "+e.message;
+}
 }
 
-async function markPaid(id){
- if(!isAdmin())return;
- const utr=$("utr-"+id)?.value.trim();
- if(!utr){alert("पहले UTR Number डालें।");return}
- if(!confirm("क्या आपने User को वास्तव में Payment भेज दिया है?"))return;
- try{
-  await runTransaction(db,async tx=>{
-   const requestRef=doc(db,"withdrawalRequests",id);
-   const requestSnap=await tx.get(requestRef);
-   if(!requestSnap.exists())throw new Error("Request नहीं मिली।");
-   const r=requestSnap.data();
-   if(r.status!=="pending")throw new Error("यह Request पहले ही process हो चुकी है।");
-   const userRef=doc(db,"users",r.uid);
-   const userSnap=await tx.get(userRef);
-   if(!userSnap.exists())throw new Error("User नहीं मिला।");
-   const balance=Number(userSnap.data().withdrawableBalance||0);
-   if(balance<Number(r.amount))throw new Error("सत्यापित बैलेंस पर्याप्त नहीं है।");
-   tx.update(userRef,{withdrawableBalance:balance-Number(r.amount)});
-   tx.update(requestRef,{
-    status:"paid",utr,paidAt:serverTimestamp()
-   });
-  });
-  alert("Payment status Paid सेव हो गया।");
-  await loadWithdrawals();
- }catch(e){alert("Error: "+e.message)}
+async function reviewProof(id,status){
+if(!isAdmin())return;
+
+const message=status==="approved"?
+"क्या इस Task को Approve करना है?":
+"क्या इस Task को Reject करना है?";
+
+if(!confirm(message))return;
+
+try{
+const ref=doc(db,"taskSubmissions",id);
+const snap=await getDoc(ref);
+
+if(!snap.exists())throw new Error("Proof नहीं मिला।");
+if(snap.data().status!=="pending"){
+throw new Error("यह Proof पहले ही Review हो चुका है।");
 }
 
-async function rejectRequest(id){
- if(!isAdmin())return;
- if(!confirm("क्या इस Request को Reject करना है?"))return;
- try{
-  await runTransaction(db,async tx=>{
-   const ref=doc(db,"withdrawalRequests",id);
-   const snap=await tx.get(ref);
-   if(!snap.exists())throw new Error("Request नहीं मिली।");
-   if(snap.data().status!=="pending")throw new Error("Request पहले ही process हो चुकी है।");
-   tx.update(ref,{status:"rejected",rejectedAt:serverTimestamp()});
-  });
-  alert("Request Reject हो गई।");
-  await loadWithdrawals();
- }catch(e){alert(e.message)}
+await updateDoc(ref,{
+status,
+reviewedAt:serverTimestamp()
+});
+
+alert(status==="approved"?
+"Task Approve हो गया!":"Task Reject हो गया!");
+
+await loadProofs();
+
+}catch(e){
+alert("Error: "+e.message);
+}
 }
 
 $("refreshAdmin").onclick=loadAdmin;
-$("refreshWithdrawals").onclick=loadWithdrawals;
-
-$("logout").onclick=async()=>{
- try{await signOut(auth)}catch(e){alert(e.message)}
-};
+$("refreshProofs").onclick=loadProofs;
 
 document.querySelectorAll(".nav button[data-tab]").forEach(b=>{
- b.onclick=()=>{
-  document.querySelectorAll(".nav button[data-tab]").forEach(x=>{
-   x.classList.toggle("active",x===b);
-  });
-  ["home","wallet","profile","admin"].forEach(id=>{
-   $(id).classList.toggle("hidden",id!==b.dataset.tab);
-  });
-  if(b.dataset.tab==="admin"){
-   loadAdmin();
-   loadWithdrawals();
-  }
- };
+b.onclick=()=>{
+document.querySelectorAll(".nav button[data-tab]").forEach(x=>{
+x.classList.toggle("active",x===b);
 });
+
+["home","wallet","profile","admin"].forEach(id=>{
+$(id).classList.toggle("hidden",id!==b.dataset.tab);
+});
+
+if(b.dataset.tab==="admin"){
+loadAdmin();
+loadProofs();
+}
+};
+});
+
 </script>
 </body>
 </html>
