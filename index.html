@@ -1,111 +1,727 @@
-rules_version = '2';
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mihir Task Earning</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#0b1220;color:white;font-family:Arial,sans-serif}
+.wrap{max-width:760px;margin:auto;padding:16px}
+.card{background:#151f32;border:1px solid #29364d;border-radius:14px;padding:16px;margin:12px 0}
+h1{color:#48e0a4}
+h2,h3{margin-top:5px}
+input,textarea,button{width:100%;padding:12px;margin:7px 0;border-radius:9px;font-size:15px}
+input,textarea{background:#0b1424;color:white;border:1px solid #394963}
+textarea{min-height:90px}
+button{background:#16a879;color:white;border:0;font-weight:bold;cursor:pointer}
+button.secondary{background:#34445e}
+button.danger{background:#c43d52}
+button:disabled{opacity:.5}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.row button{flex:1;min-width:100px}
+.hidden{display:none!important}
+.small{font-size:13px;color:#aab8cc;overflow-wrap:anywhere}
+.stat{font-size:25px;color:#48e0a4;font-weight:bold}
+.item{border-bottom:1px solid #34445e;padding:12px 0;overflow-wrap:anywhere}
+.tag{display:inline-block;padding:5px 9px;border-radius:20px;background:#263b50;font-size:12px}
+.green{color:#48e0a4}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+header button{width:auto}
+</style>
+</head>
+<body>
+<div class="wrap">
 
-service cloud.firestore {
-  match /databases/{database}/documents {
+<header>
+  <div>
+    <h1>🟢 Mihir Task Earning</h1>
+    <div class="small">छोटे काम • सीखें • आगे बढ़ें</div>
+  </div>
+  <button id="logoutBtn" class="secondary hidden">Logout</button>
+</header>
 
-    function signedIn() {
-      return request.auth != null;
+<div id="message" class="card hidden"></div>
+
+<!-- LOGIN / SIGNUP -->
+<section id="authSection">
+  <div class="card">
+    <h2>Login</h2>
+    <input id="loginEmail" type="email" placeholder="Email">
+    <input id="loginPassword" type="password" placeholder="Password">
+    <button id="loginBtn">Login करें</button>
+    <button id="forgotBtn" class="secondary">Forgot Password</button>
+  </div>
+
+  <div class="card">
+    <h2>नया Account बनाएं</h2>
+    <input id="signupName" placeholder="आपका नाम">
+    <input id="signupEmail" type="email" placeholder="Email">
+    <input id="signupPassword" type="password" placeholder="Password (कम से कम 6 अक्षर)">
+    <button id="signupBtn">Sign Up</button>
+  </div>
+</section>
+
+<!-- USER DASHBOARD -->
+<section id="appSection" class="hidden">
+  <div class="card">
+    <h2>Welcome, <span id="userName">User</span> 👋</h2>
+    <p id="userEmail" class="small"></p>
+    <div class="row">
+      <div class="card" style="flex:1;margin:0">
+        <div class="small">Wallet Balance</div>
+        <div class="stat">₹<span id="walletBalance">0</span></div>
+      </div>
+      <div class="card" style="flex:1;margin:0">
+        <div class="small">Completed Tasks</div>
+        <div class="stat" id="completedCount">0</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <button data-tab="tasks">📋 Tasks</button>
+    <button data-tab="wallet" class="secondary">💰 Wallet</button>
+    <button data-tab="profile" class="secondary">👤 Profile</button>
+    <button data-tab="history" class="secondary">📜 History</button>
+  </div>
+
+  <div id="tasksTab" class="tabContent">
+    <div class="card">
+      <h2>Available Tasks</h2>
+      <div id="taskList">Loading...</div>
+    </div>
+  </div>
+
+  <div id="walletTab" class="tabContent hidden">
+    <div class="card">
+      <h2>My Wallet</h2>
+      <div class="stat">₹<span id="walletBalance2">0</span></div>
+      <p class="small">यह Demo Wallet है। इसमें वास्तविक पैसे अपने-आप नहीं आते।</p>
+      <h3>Withdrawal Request</h3>
+      <input id="withdrawAmount" type="number" min="1" placeholder="Amount (₹)">
+      <input id="upiId" placeholder="UPI ID (example@upi)">
+      <button id="withdrawBtn">Request Withdrawal</button>
+      <p class="small">Withdrawal Request Admin के पास जाएगी। अभी वास्तविक UPI भुगतान सक्रिय नहीं है।</p>
+    </div>
+  </div>
+
+  <div id="profileTab" class="tabContent hidden">
+    <div class="card">
+      <h2>My Profile</h2>
+      <p>Name: <b id="profileName"></b></p>
+      <p>Email: <b id="profileEmail"></b></p>
+      <p class="small">User ID: <span id="profileUid"></span></p>
+    </div>
+  </div>
+
+  <div id="historyTab" class="tabContent hidden">
+    <div class="card">
+      <h2>My Task History</h2>
+      <div id="myHistory">Loading...</div>
+    </div>
+    <div class="card">
+      <h2>Withdrawal History</h2>
+      <div id="myWithdrawals">Loading...</div>
+    </div>
+  </div>
+</section>
+
+<!-- ADMIN PANEL -->
+<section id="adminSection" class="hidden">
+  <div class="card">
+    <h2>🛡️ Admin Panel</h2>
+    <p>Welcome, Mihir Admin</p>
+    <div class="row">
+      <div class="card" style="flex:1;margin:0">
+        <div class="small">Registered Users</div>
+        <div class="stat" id="totalUsers">0</div>
+      </div>
+      <div class="card" style="flex:1;margin:0">
+        <div class="small">Task Proofs</div>
+        <div class="stat" id="totalProofs">0</div>
+      </div>
+    </div>
+    <button id="refreshAdminBtn">Refresh Admin Data</button>
+  </div>
+
+  <div class="card">
+    <h2>👥 Registered Users</h2>
+    <div id="adminUsers">Loading...</div>
+  </div>
+
+  <div class="card">
+    <h2>📋 Task Proof Management</h2>
+    <div id="adminProofs">Loading...</div>
+  </div>
+
+  <div class="card">
+    <h2>💸 Withdrawal Management</h2>
+    <div id="adminWithdrawals">Loading...</div>
+  </div>
+</section>
+</div>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail,
+  onAuthStateChanged,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc,
+  getDocs,
+  collection,
+  updateDoc,
+  addDoc,
+  query,
+  where,
+  serverTimestamp,
+  runTransaction
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* सही Firebase Configuration */
+const firebaseConfig = {
+  apiKey: "AIzaSyDFBGdt5UPm9poNbqlXKyZF1d2NGu1AkUE",
+  authDomain: "mihir-task-earnings.firebaseapp.com",
+  projectId: "mihir-task-earnings",
+  storageBucket: "mihir-task-earnings.firebasestorage.app",
+  messagingSenderId: "827363704121",
+  appId: "1:827363704121:web:f2b8e6c4bbc521f1fdfce8",
+  measurementId: "G-MBCQ91W6NE"
+};
+
+const ADMIN_EMAIL = "bhoimihir946@gmail.com";
+
+const firebaseApp = initializeApp(firebaseConfig);
+const auth = getAuth(firebaseApp);
+const db = getFirestore(firebaseApp);
+
+const TASKS = [
+  {
+    id:"typing",
+    title:"Hindi Typing Task",
+    description:"हिंदी में 100 शब्द लिखें और अपना काम Proof में Paste करें।",
+    reward:5
+  },
+  {
+    id:"safety",
+    title:"Online Safety Task",
+    description:"Online Safety के 5 नियम अपने शब्दों में लिखें।",
+    reward:3
+  },
+  {
+    id:"quiz",
+    title:"General Knowledge Quiz",
+    description:"भारत की राजधानी, राष्ट्रीय पशु, राष्ट्रीय पक्षी और राष्ट्रीय फूल के नाम लिखें।",
+    reward:4
+  }
+];
+
+let currentUser = null;
+let currentUserData = null;
+
+const $ = id => document.getElementById(id);
+
+function showMessage(message,error=false){
+  const box = $("message");
+  box.textContent = message;
+  box.classList.remove("hidden");
+  box.style.borderColor = error ? "#c43d52" : "#16a879";
+  window.scrollTo({top:0,behavior:"smooth"});
+  setTimeout(()=>box.classList.add("hidden"),6000);
+}
+
+function escapeHTML(value){
+  return String(value ?? "").replace(/[&<>"']/g,c=>({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#39;"
+  })[c]);
+}
+
+function money(value){
+  return Number(value || 0).toFixed(2).replace(/\.00$/,"");
+}
+
+function isAdmin(){
+  return currentUser?.email?.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+}
+
+function firebaseError(error){
+  const messages = {
+    "auth/invalid-credential":"Email या Password गलत है।",
+    "auth/user-not-found":"यह Email Account नहीं मिला।",
+    "auth/wrong-password":"Password गलत है।",
+    "auth/email-already-in-use":"यह Email पहले से Register है।",
+    "auth/weak-password":"Password कम से कम 6 अक्षर का रखें।",
+    "auth/invalid-email":"Email सही नहीं है।",
+    "auth/operation-not-allowed":"Firebase में Email/Password Login Enable नहीं है।",
+    "auth/network-request-failed":"Internet Connection चेक करें।",
+    "permission-denied":"Firestore Permission Error: Rules चेक करने होंगे।"
+  };
+  return messages[error.code] || error.message || "कुछ Error हुआ।";
+}
+
+/* TAB NAVIGATION */
+function showTab(tab){
+  document.querySelectorAll(".tabContent").forEach(el=>{
+    el.classList.add("hidden");
+  });
+  $(tab+"Tab").classList.remove("hidden");
+}
+
+document.querySelectorAll("[data-tab]").forEach(button=>{
+  button.addEventListener("click",()=>{
+    showTab(button.dataset.tab);
+  });
+});
+
+/* SIGN UP */
+$("signupBtn").addEventListener("click",async()=>{
+  const name = $("signupName").value.trim();
+  const email = $("signupEmail").value.trim();
+  const password = $("signupPassword").value;
+
+  if(!name || !email || !password){
+    return showMessage("सभी जानकारी भरें।",true);
+  }
+
+  if(password.length < 6){
+    return showMessage("Password कम से कम 6 अक्षर का होना चाहिए।",true);
+  }
+
+  const button = $("signupBtn");
+  button.disabled = true;
+
+  try{
+    const result = await createUserWithEmailAndPassword(auth,email,password);
+
+    await setDoc(doc(db,"users",result.user.uid),{
+      name:name,
+      email:result.user.email,
+      uid:result.user.uid,
+      withdrawableBalance:0,
+      createdAt:serverTimestamp(),
+      updatedAt:serverTimestamp()
+    });
+
+    showMessage("Account सफलतापूर्वक बन गया!");
+  }catch(error){
+    showMessage(firebaseError(error),true);
+  }finally{
+    button.disabled = false;
+  }
+});
+
+/* LOGIN */
+$("loginBtn").addEventListener("click",async()=>{
+  const email = $("loginEmail").value.trim();
+  const password = $("loginPassword").value;
+
+  if(!email || !password){
+    return showMessage("Email और Password भरें।",true);
+  }
+
+  const button = $("loginBtn");
+  button.disabled = true;
+
+  try{
+    await signInWithEmailAndPassword(auth,email,password);
+    showMessage("Login सफल हुआ!");
+  }catch(error){
+    showMessage(firebaseError(error),true);
+  }finally{
+    button.disabled = false;
+  }
+});
+
+/* FORGOT PASSWORD */
+$("forgotBtn").addEventListener("click",async()=>{
+  const email = $("loginEmail").value.trim();
+
+  if(!email){
+    return showMessage("पहले Login वाला Email भरें।",true);
+  }
+
+  try{
+    await sendPasswordResetEmail(auth,email);
+    showMessage("Password reset link आपके Email पर भेज दिया गया है।");
+  }catch(error){
+    showMessage(firebaseError(error),true);
+  }
+});
+
+/* LOGOUT */
+$("logoutBtn").addEventListener("click",async()=>{
+  try{
+    await signOut(auth);
+    showMessage("Logout हो गया।");
+  }catch(error){
+    showMessage(firebaseError(error),true);
+  }
+});
+
+/* AUTH STATE */
+onAuthStateChanged(auth,async user=>{
+  currentUser = user;
+
+  $("authSection").classList.toggle("hidden",!!user);
+  $("appSection").classList.toggle("hidden",!user);
+  $("adminSection").classList.add("hidden");
+  $("logoutBtn").classList.toggle("hidden",!user);
+
+  if(!user){
+    currentUserData = null;
+    return;
+  }
+
+  try{
+    const userRef = doc(db,"users",user.uid);
+    let snap = await getDoc(userRef);
+
+    if(!snap.exists()){
+      await setDoc(userRef,{
+        name:user.displayName || "User",
+        email:user.email,
+        uid:user.uid,
+        withdrawableBalance:0,
+        createdAt:serverTimestamp(),
+        updatedAt:serverTimestamp()
+      });
+      snap = await getDoc(userRef);
     }
 
-    function isAdmin() {
-      return signedIn()
-        && request.auth.token.email == "bhoimihir946@gmail.com"
-        && request.auth.token.email_verified == true;
+    currentUserData = snap.data();
+
+    await loadUserDashboard();
+
+    if(isAdmin()){
+      $("adminSection").classList.remove("hidden");
+      await loadAdminData();
     }
+  }catch(error){
+    showMessage(firebaseError(error),true);
+  }
+});
 
-    function isOwner(userId) {
-      return signedIn() && request.auth.uid == userId;
-    }
+/* USER DASHBOARD */
+async function loadUserDashboard(){
+  if(!currentUser) return;
 
-    match /users/{userId} {
-      allow read: if isAdmin() || isOwner(userId);
+  const snap = await getDoc(doc(db,"users",currentUser.uid));
 
-      allow create: if isOwner(userId)
-        && request.resource.data.uid == userId
-        && request.resource.data.email == request.auth.token.email
-        && request.resource.data.withdrawableBalance == 0
-        && request.resource.data.keys().hasOnly([
-          'uid', 'name', 'email',
-          'withdrawableBalance',
-          'createdAt', 'updatedAt'
-        ]);
+  if(snap.exists()){
+    currentUserData = snap.data();
+  }
 
-      allow update: if (
-        isOwner(userId)
-        && request.resource.data.diff(resource.data)
-          .affectedKeys().hasOnly(['name', 'updatedAt'])
-      ) || (
-        isAdmin()
-        && request.resource.data.diff(resource.data)
-          .affectedKeys().hasOnly(['withdrawableBalance'])
-        && request.resource.data.withdrawableBalance is number
-        && request.resource.data.withdrawableBalance >= 0
-      );
+  const name = currentUserData?.name || "User";
+  const balance = Number(currentUserData?.withdrawableBalance || 0);
 
-      allow delete: if false;
+  $("userName").textContent = name;
+  $("userEmail").textContent = currentUser.email || "";
+  $("walletBalance").textContent = money(balance);
+  $("walletBalance2").textContent = money(balance);
+  $("profileName").textContent = name;
+  $("profileEmail").textContent = currentUser.email || "";
+  $("profileUid").textContent = currentUser.uid;
 
-      match /completions/{taskId} {
-        allow read: if isAdmin() || isOwner(userId);
-        allow create: if isOwner(userId)
-          && request.resource.data.taskId == taskId;
-        allow update, delete: if false;
-      }
-    }
+  await loadTasks();
+  await loadUserHistory();
+}
 
-    match /tasks/{taskId} {
-      allow read: if signedIn();
-      allow write: if isAdmin();
-    }
+/* TASK LIST */
+async function loadTasks(){
+  const target = $("taskList");
+  target.textContent = "Loading...";
 
-    match /taskSubmissions/{submissionId} {
-      allow read: if isAdmin()
-        || (signedIn() && resource.data.uid == request.auth.uid);
+  try{
+    const submissions = await getDocs(query(
+      collection(db,"taskSubmissions"),
+      where("uid","==",currentUser.uid)
+    ));
 
-      allow create: if signedIn()
-        && request.resource.data.uid == request.auth.uid
-        && request.resource.data.email == request.auth.token.email
-        && request.resource.data.status == "pending"
-        && request.resource.data.taskId in ["typing", "safety", "quiz"]
-        && request.resource.data.reward ==
-          (request.resource.data.taskId == "typing" ? 5 :
-           request.resource.data.taskId == "safety" ? 3 : 4)
-        && request.resource.data.proof is string
-        && request.resource.data.proof.size() >= 10
-        && request.resource.data.keys().hasOnly([
-          'uid', 'email', 'taskId', 'title',
-          'reward', 'proof', 'status', 'createdAt'
-        ]);
+    const submitted = new Map();
 
-      allow update: if isAdmin()
-        && resource.data.status == "pending"
-        && request.resource.data.status in ["approved", "rejected"]
-        && request.resource.data.diff(resource.data)
-          .affectedKeys().hasOnly(['status', 'reviewedAt']);
+    submissions.forEach(item=>{
+      submitted.set(item.data().taskId,item.data());
+    });
 
-      allow delete: if false;
-    }
+    let completed = 0;
+    let html = "";
 
-    match /withdrawalRequests/{requestId} {
-      allow create: if signedIn()
-        && request.resource.data.uid == request.auth.uid
-        && request.resource.data.status == "pending"
-        && request.resource.data.amount is number
-        && request.resource.data.amount > 0
-        && request.resource.data.keys().hasOnly([
-          'uid', 'email', 'amount',
-          'upiId', 'status', 'createdAt'
-        ]);
+    TASKS.forEach(task=>{
+      const old = submitted.get(task.id);
 
-      allow read: if isAdmin()
-        || (signedIn() && resource.data.uid == request.auth.uid);
+      if(old?.status === "approved") completed++;
 
-      allow update: if isAdmin()
-        && resource.data.status == "pending"
-        && request.resource.data.status in ["paid", "rejected"]
-        && request.resource.data.diff(resource.data)
-          .affectedKeys().hasOnly(['status', 'reviewedAt']);
+      html += `
+        <div class="item">
+          <h3>${escapeHTML(task.title)}</h3>
+          <p>${escapeHTML(task.description)}</p>
+          <p class="green"><b>Reward: ₹${task.reward}</b></p>
+          ${
+            old
+            ? `<span class="tag">${escapeHTML(old.status)}</span>
+               <p class="small">इस Task का Proof पहले Submit हो चुका है।</p>`
+            : `<textarea id="proof_${task.id}" placeholder="अपना Task Proof यहां लिखें..."></textarea>
+               <button data-submit-task="${task.id}">Submit Proof</button>`
+          }
+        </div>`;
+    });
 
-      allow delete: if false;
-    }
+    target.innerHTML = html;
+    $("completedCount").textContent = completed;
+
+  }catch(error){
+    target.textContent = firebaseError(error);
   }
 }
+
+/* SUBMIT TASK PROOF */
+document.addEventListener("click",async event=>{
+  const taskId = event.target.dataset.submitTask;
+  if(!taskId) return;
+
+  const task = TASKS.find(item=>item.id===taskId);
+  if(!task || !currentUser) return;
+
+  const proof = $("proof_"+taskId).value.trim();
+
+  if(proof.length < 10){
+    return showMessage("कम से कम 10 अक्षरों का Proof लिखें।",true);
+  }
+
+  const button = event.target;
+  button.disabled = true;
+
+  try{
+    const submissionId = currentUser.uid+"_"+task.id;
+    const ref = doc(db,"taskSubmissions",submissionId);
+    const old = await getDoc(ref);
+
+    if(old.exists()){
+      showMessage("इस Task का Proof पहले Submit हो चुका है।",true);
+      await loadTasks();
+      return;
+    }
+
+    await setDoc(ref,{
+      uid:currentUser.uid,
+      email:currentUser.email,
+      taskId:task.id,
+      title:task.title,
+      reward:task.reward,
+      proof:proof,
+      status:"pending",
+      createdAt:serverTimestamp()
+    });
+
+    showMessage("Proof Submit हो गया! Admin Review करेगा।");
+    await loadTasks();
+    await loadUserHistory();
+
+  }catch(error){
+    showMessage(firebaseError(error),true);
+    button.disabled = false;
+  }
+});
+
+/* USER HISTORY */
+async function loadUserHistory(){
+  if(!currentUser) return;
+
+  try{
+    const proofs = await getDocs(query(
+      collection(db,"taskSubmissions"),
+      where("uid","==",currentUser.uid)
+    ));
+
+    let proofHTML = "";
+
+    proofs.forEach(item=>{
+      const d = item.data();
+
+      proofHTML += `
+        <div class="item">
+          <b>${escapeHTML(d.title)}</b>
+          <p>Reward: ₹${money(d.reward)}</p>
+          <span class="tag">${escapeHTML(d.status)}</span>
+        </div>`;
+    });
+
+    $("myHistory").innerHTML = proofHTML || "अभी कोई Task Submit नहीं किया।";
+
+    const withdrawals = await getDocs(query(
+      collection(db,"withdrawalRequests"),
+      where("uid","==",currentUser.uid)
+    ));
+
+    let withdrawalHTML = "";
+
+    withdrawals.forEach(item=>{
+      const d = item.data();
+
+      withdrawalHTML += `
+        <div class="item">
+          <b>₹${money(d.amount)}</b>
+          <p>UPI: ${escapeHTML(d.upiId)}</p>
+          <span class="tag">${escapeHTML(d.status)}</span>
+        </div>`;
+    });
+
+    $("myWithdrawals").innerHTML =
+      withdrawalHTML || "अभी कोई Withdrawal Request नहीं है।";
+
+  }catch(error){
+    $("myHistory").textContent = firebaseError(error);
+  }
+}
+
+/* WITHDRAWAL REQUEST */
+$("withdrawBtn").addEventListener("click",async()=>{
+  if(!currentUser || !currentUserData) return;
+
+  const amount = Number($("withdrawAmount").value);
+  const upiId = $("upiId").value.trim();
+  const balance = Number(currentUserData.withdrawableBalance || 0);
+
+  if(!Number.isFinite(amount) || amount<=0){
+    return showMessage("सही Withdrawal Amount डालें।",true);
+  }
+
+  if(!upiId || !upiId.includes("@")){
+    return showMessage("सही UPI ID डालें।",true);
+  }
+
+  if(amount>balance){
+    return showMessage("Wallet में पर्याप्त Balance नहीं है।",true);
+  }
+
+  const button = $("withdrawBtn");
+  button.disabled = true;
+
+  try{
+    await addDoc(collection(db,"withdrawalRequests"),{
+      uid:currentUser.uid,
+      email:currentUser.email,
+      amount:amount,
+      upiId:upiId,
+      status:"pending",
+      createdAt:serverTimestamp()
+    });
+
+    $("withdrawAmount").value = "";
+    $("upiId").value = "";
+
+    showMessage("Withdrawal Request भेज दी गई है।");
+    await loadUserHistory();
+
+  }catch(error){
+    showMessage(firebaseError(error),true);
+  }finally{
+    button.disabled = false;
+  }
+});
+
+/* ADMIN DATA */
+$("refreshAdminBtn").addEventListener("click",loadAdminData);
+
+async function loadAdminData(){
+  if(!isAdmin()) return;
+
+  try{
+    const [users,proofs,withdrawals] = await Promise.all([
+      getDocs(collection(db,"users")),
+      getDocs(collection(db,"taskSubmissions")),
+      getDocs(collection(db,"withdrawalRequests"))
+    ]);
+
+    $("totalUsers").textContent = users.size;
+    $("totalProofs").textContent = proofs.size;
+
+    let usersHTML = "";
+
+    users.forEach(item=>{
+      const d = item.data();
+
+      usersHTML += `
+        <div class="item">
+          <b>${escapeHTML(d.name || "नाम नहीं दिया")}</b>
+          <p>${escapeHTML(d.email || "Email उपलब्ध नहीं")}</p>
+          <p>Wallet: ₹${money(d.withdrawableBalance)}</p>
+          <p class="small">UID: ${escapeHTML(item.id)}</p>
+        </div>`;
+    });
+
+    $("adminUsers").innerHTML = usersHTML || "कोई User नहीं मिला।";
+
+    let proofsHTML = "";
+
+    proofs.forEach(item=>{
+      const d = item.data();
+
+      proofsHTML += `
+        <div class="item">
+          <b>${escapeHTML(d.title || "Task")}</b>
+          <p>Email: ${escapeHTML(d.email)}</p>
+          <p>Reward: ₹${money(d.reward)}</p>
+          <p>Proof: ${escapeHTML(d.proof)}</p>
+          <p>Status: <span class="tag">${escapeHTML(d.status)}</span></p>
+          ${
+            d.status==="pending"
+            ? `<div class="row">
+                <button data-approve-proof="${item.id}">Approve</button>
+                <button class="danger" data-reject-proof="${item.id}">Reject</button>
+              </div>`
+            : ""
+          }
+        </div>`;
+    });
+
+    $("adminProofs").innerHTML = proofsHTML || "कोई Proof नहीं मिला।";
+
+    let withdrawalsHTML = "";
+
+    withdrawals.forEach(item=>{
+      const d = item.data();
+
+      withdrawalsHTML += `
+        <div class="item">
+          <b>₹${money(d.amount)}</b>
+          <p>Email: ${escapeHTML(d.email)}</p>
+          <p>UPI: ${escapeHTML(d.upiId)}</p>
+          <p>Status: <span class="tag">${escapeHTML(d.status)}</span></p>
+          ${
+            d.status==="pending"
+            ? `<div class="row">
+                <button data-approve-withdraw="${item.id}">Approve</button>
+                <button class="danger" data-reject-withdraw="${item.id}">Reject</button>
+              </div>`
+            : ""
+          }
+        </div>`;
+    });
+
+    $("adminWithdrawals").innerHTML =
+      withdrawalsHTML || "कोई Withdrawal Request नहीं है।";
+
+  }catch(error){
+    showMessage("Admin Error: "+firebaseError(error),true);
+  }
+}
+
+/* ADMIN: PROOF APPROVE / REJECT */
+document.addEventListener("click",async event=>{
+  const app
