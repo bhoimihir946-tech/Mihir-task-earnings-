@@ -162,6 +162,28 @@ header button{width:auto}
 </section>
 </div>
 
+<script>
+window.__mihirAppReady = false;
+function showStartupError(message) {
+  const box = document.getElementById("message");
+  if (!box) return;
+  box.textContent = message;
+  box.classList.remove("hidden");
+  box.style.borderColor = "#c43d52";
+}
+window.addEventListener("error", function(event) {
+  showStartupError("App JavaScript load error: " + (event.message || "Unknown error") + ". Page refresh करके फिर कोशिश करें।");
+});
+window.addEventListener("unhandledrejection", function(event) {
+  const reason = event.reason;
+  showStartupError("App error: " + (reason && reason.message ? reason.message : String(reason)));
+});
+document.addEventListener("click", function(event) {
+  if (event.target.closest("#loginBtn, #forgotBtn") && !window.__mihirAppReady) {
+    showStartupError("Login system load नहीं हुआ। Internet check करके page refresh करें; नीचे दिखने वाला error हमें बताएं।");
+  }
+}, true);
+</script>
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
@@ -810,6 +832,7 @@ document.addEventListener("click", async event => {
   }
 });
 
+window.__mihirAppReady = true;
 </script>
 </body>
 </html>
