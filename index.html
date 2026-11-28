@@ -722,6 +722,94 @@ async function loadAdminData(){
   }
 }
 
-/* ADMIN: PROOF APPROVE / REJECT */
-document.addEventListener("click",async event=>{
-  const app
+/* ADMIN: PROOF APPROVE / REJECT + WITHDRAWAL REVIEW */
+document.addEventListener("click", async event => {
+  const approveProofId = event.target.closest("[data-approve-proof]")?.dataset.approveProof;
+  const rejectProofId = event.target.closest("[data-reject-proof]")?.dataset.rejectProof;
+  const approveWithdrawalId = event.target.closest("[data-approve-withdraw]")?.dataset.approveWithdraw;
+  const rejectWithdrawalId = event.target.closest("[data-reject-withdraw]")?.dataset.rejectWithdraw;
+
+  if (!approveProofId && !rejectProofId && !approveWithdrawalId && !rejectWithdrawalId) return;
+  if (!isAdmin()) {
+    showMessage("यह सुविधा केवल Admin के लिए है।", true);
+    return;
+  }
+
+  const button = event.target.closest("button");
+  if (button) button.disabled = true;
+
+  try {
+    if (approveProofId) {
+      const proofRef = doc(db, "taskSubmissions", approveProofId);
+      await runTransaction(db, async transaction => {
+        const proofSnap = await transaction.get(proofRef);
+        if (!proofSnap.exists()) throw new Error("Task Proof नहीं मिला।");
+        const proofData = proofSnap.data();
+        if (proofData.status !== "pending") throw new Error("यह Proof पहले ही review हो चुका है।");
+
+        const task = TASKS.find(item => item.id === proofData.taskId);
+        if (!task) throw new Error("अमान्य Task है।");
+
+        const userRef = doc(db, "users", proofData.uid);
+        const userSnap = await transaction.get(userRef);
+        if (!userSnap.exists()) throw new Error("User profile नहीं मिला।");
+
+        const oldBalance = Number(userSnap.data().withdrawableBalance || 0);
+        transaction.update(proofRef, {
+          status: "approved",
+          reviewedAt: serverTimestamp(),
+          reviewedBy: currentUser.email
+        });
+        transaction.update(userRef, {
+          withdrawableBalance: oldBalance + task.reward,
+          updatedAt: serverTimestamp()
+        });
+      });
+      showMessage("Task approve हो गया और Demo Wallet में reward जोड़ दिया गया।");
+    } else if (rejectProofId) {
+      const proofRef = doc(db, "taskSubmissions", rejectProofId);
+      const proofSnap = await getDoc(proofRef);
+      if (!proofSnap.exists()) throw new Error("Task Proof नहीं मिला।");
+      if (proofSnap.data().status !== "pending") throw new Error("यह Proof पहले ही review हो चुका है।");
+      await updateDoc(proofRef, {
+        status: "rejected",
+        reviewedAt: serverTimestamp(),
+        reviewedBy: currentUser.email
+      });
+      showMessage("Task Proof reject कर दिया गया।");
+    } else if (approveWithdrawalId) {
+      const withdrawalRef = doc(db, "withdrawalRequests", approveWithdrawalId);
+      const withdrawalSnap = await getDoc(withdrawalRef);
+      if (!withdrawalSnap.exists()) throw new Error("Withdrawal request नहीं मिली।");
+      if (withdrawalSnap.data().status !== "pending") throw new Error("यह request पहले ही review हो चुकी है।");
+      await updateDoc(withdrawalRef, {
+        status: "approved",
+        reviewedAt: serverTimestamp(),
+        reviewedBy: currentUser.email
+      });
+      showMessage("Withdrawal request approve हुई। यह सिर्फ status है; UPI payment अभी manually करनी होगी।");
+    } else if (rejectWithdrawalId) {
+      const withdrawalRef = doc(db, "withdrawalRequests", rejectWithdrawalId);
+      const withdrawalSnap = await getDoc(withdrawalRef);
+      if (!withdrawalSnap.exists()) throw new Error("Withdrawal request नहीं मिली।");
+      if (withdrawalSnap.data().status !== "pending") throw new Error("यह request पहले ही review हो चुकी है।");
+      await updateDoc(withdrawalRef, {
+        status: "rejected",
+        reviewedAt: serverTimestamp(),
+        reviewedBy: currentUser.email
+      });
+      showMessage("Withdrawal request reject कर दी गई।");
+    }
+
+    await loadAdminData();
+    if (currentUser) await loadUserDashboard();
+  } catch (error) {
+    showMessage("Admin Action Error: " + firebaseError(error), true);
+  } finally {
+    if (button) button.disabled = false;
+  }
+});
+
+</script>
+</body>
+</html>
